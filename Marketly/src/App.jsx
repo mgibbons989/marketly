@@ -7,6 +7,7 @@ import Signup from "./pages/Signup.jsx"
 import Login from "./pages/Login.jsx"
 import LandingPage from './pages/LandingPage.jsx'
 import SellerDB from './SellerPages/SellerDB.jsx'
+import ProductList from './SellerPages/ProductList.jsx'
 
 // import Seller Pages
 
@@ -20,6 +21,7 @@ export default function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/seller/product-list" element={<ProductList />} />
 
       <Route
         path="/dashboard/seller"
