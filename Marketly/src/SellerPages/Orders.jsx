@@ -7,10 +7,12 @@ import { orders } from "./orders"
 import OrderCard from "./OrderCard";
 
 
-export default function Orders() {
+export default function Orders({ mode = "seller" }) {
     const [searchQuery, setSearchQuery] = useState("")
 
     const [filter, setFilter] = useState("All");
+
+    const searchField = mode === "seller" ? "customerName" : "sellerName";
 
     const filteredOrders = useMemo(() => {
         let result = orders
@@ -19,9 +21,9 @@ export default function Orders() {
         if (searchQuery.trim()) {
             result = result.filter(
                 (order) =>
-                    order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()),
-            )
+                    order[searchField].toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase())
+            );
         }
 
         // Apply status filter
@@ -37,12 +39,12 @@ export default function Orders() {
         }
 
         return result
-    }, [searchQuery, filter])
+    }, [searchQuery, filter, mode])
 
 
     return (
         <>
-            <Header />
+            <Header mode="buyer" />
             <div className="page">
                 <div className="page-inner">
 
@@ -52,7 +54,9 @@ export default function Orders() {
                             <Search className="search-icon" size={20} />
                             <input
                                 type="text"
-                                placeholder="Search by Customer or Order #"
+                                placeholder={mode === "seller"
+                                    ? "Search by Customer or Order #"
+                                    : "Search by Seller or Order #"}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="search-input"
@@ -83,7 +87,7 @@ export default function Orders() {
 
                     <div className="orders-grid">
                         {filteredOrders.map(order => (
-                            <OrderCard key={order.id} order={order} />
+                            <OrderCard key={order.id} order={order} mode={mode} />
                         ))}
                     </div>
 

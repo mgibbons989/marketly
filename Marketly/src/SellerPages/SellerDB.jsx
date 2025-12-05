@@ -1,9 +1,8 @@
 import React from "react";
 import Header from "../components/Header";
-import PendingOrders from "../components/PendingOrders"
-import CurrentShipments from "../components/CurrentShipments"
-import ProductAlerts from "../components/ProductAlerts"
-
+import PendingOrders from "./SellerPendingOrders"
+import CurrentShipments from "./SellerCurrentShipments"
+import ProductAlerts from "./SellerProductAlerts"
 
 export default function SellerDB() {
 

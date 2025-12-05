@@ -1,7 +1,7 @@
-import SectionCards from "./SectionCards"
+import SectionCards from "../components/SectionCards"
 
 export default function CurrentShipments() {
-    const shipmentsData = [
+    const buyerShipmentsData = [
         {
             orderNum: "#ORD-1230",
             trackingNum: "TRK-9876543210",
@@ -20,7 +20,7 @@ export default function CurrentShipments() {
     ]
     return (
         <>
-            <SectionCards title="Current Shipments" items={shipmentsData} type="shipments" />
+            <SectionCards title="Current Shipments" items={buyerShipmentsData} type="shipments" mode="buyer" />
         </>
     );
 }

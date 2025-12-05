@@ -8,7 +8,10 @@ import { orders } from "./orders";
 import { ArrowLeft } from "lucide-react";
 
 
-export default function OrdersDetails() {
+export default function OrdersDetails({ mode = "seller" }) {
+
+
+
     const { orderId } = useParams()
     const navigate = useNavigate()
     const order = orders.find((o) => o.id === Number.parseInt(orderId))
@@ -16,6 +19,9 @@ export default function OrdersDetails() {
     const [currentStatus, setCurrentStatus] = useState(order?.status || "")
     const [hasChanges, setHasChanges] = useState(false)
     const [showUnsavedWarning, setShowUnsavedWarning] = useState(false)
+
+    const nameLabel = mode === "seller" ? "Customer Name" : "Seller Name";
+    const nameValue = mode === "seller" ? order.customerName : order.sellerName;
 
     useEffect(() => {
         if (order) {
@@ -74,7 +80,7 @@ export default function OrdersDetails() {
 
                 <div className="page-inner">
 
-                    <Link to="/seller/orders" className="back-button" onClick={handleBackClick}>
+                    <Link to={mode === "seller" ? "/seller/orders" : "/customer/orders"} className="back-button" onClick={mode === "seller" ? handleBackClick : undefined}>
                         <ArrowLeft size={20} />
                         Back
                     </Link>
@@ -98,13 +104,31 @@ export default function OrdersDetails() {
 
                         <div className="detail-row">
                             <span className="detail-label">Status</span>
-                            <select value={currentStatus} onChange={handleStatusChange} className="status-dropdown">
+
+                            {/* <select value={currentStatus} onChange={handleStatusChange} className="status-dropdown">
                                 <option value="Placed">Placed</option>
                                 <option value="Packing">Packing</option>
                                 <option value="Pending Shipment">Pending Shipment</option>
                                 <option value="Shipped">Shipped</option>
                                 <option value="Completed">Completed</option>
-                            </select>
+                            </select> */}
+                            {mode === "seller" ? (
+                                <select
+                                    value={currentStatus}
+                                    onChange={handleStatusChange}
+                                    className="status-dropdown"
+                                >
+                                    <option value="Placed">Placed</option>
+                                    <option value="Packing">Packing</option>
+                                    <option value="Pending Shipment">Pending Shipment</option>
+                                    <option value="Shipped">Shipped</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            ) : (
+                                <span className={`order-value status-bdg status-${order.status.toLowerCase().replace(" ", "-")}`}>
+                                    {order.status}
+                                </span>
+                            )}
                         </div>
 
                         <div className="products-section">
@@ -122,7 +146,7 @@ export default function OrdersDetails() {
                             </div>
                         </div>
 
-                        {hasChanges && (
+                        {mode === "seller" && hasChanges && (
                             <div className="action-buttons">
                                 <button onClick={handleSaveChanges} className="btn btn-save">
                                     Save Changes
@@ -135,7 +159,7 @@ export default function OrdersDetails() {
                     </div>
                 </div>
 
-                {showUnsavedWarning && (
+                {mode === "seller" && showUnsavedWarning && (
                     <div className="modal-overlay">
                         <div className="modal">
                             <h3 className="modal-title">Unsaved Changes</h3>

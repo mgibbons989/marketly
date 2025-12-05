@@ -1,6 +1,7 @@
 export const orders = [
     {
         id: 1,
+        sellerName: "John Smith",
         customerName: "John Smith",
         orderNumber: "ORD-001234",
         datePlaced: "2024-01-15",
@@ -22,6 +23,7 @@ export const orders = [
     {
         id: 2,
         customerName: "Sarah Johnson",
+        sellerName: "John Smith",
         orderNumber: "ORD-001235",
         datePlaced: "2024-01-16",
         status: "Completed",
@@ -37,6 +39,7 @@ export const orders = [
     {
         id: 3,
         customerName: "Michael Brown",
+        sellerName: "John Smith",
         orderNumber: "ORD-001236",
         datePlaced: "2024-01-17",
         status: "Packing",
@@ -57,6 +60,7 @@ export const orders = [
     {
         id: 4,
         customerName: "Emily Davis",
+        sellerName: "John Smith",
         orderNumber: "ORD-001237",
         datePlaced: "2024-01-18",
         status: "Placed",
@@ -72,6 +76,7 @@ export const orders = [
     {
         id: 5,
         customerName: "David Wilson",
+        sellerName: "John Smith",
         orderNumber: "ORD-001238",
         datePlaced: "2024-01-19",
         status: "Pending Shipment",
@@ -92,6 +97,7 @@ export const orders = [
     {
         id: 6,
         customerName: "Lisa Anderson",
+        sellerName: "John Smith",
         orderNumber: "ORD-001239",
         datePlaced: "2024-01-12",
         status: "Completed",
@@ -107,6 +113,7 @@ export const orders = [
     {
         id: 7,
         customerName: "Robert Taylor",
+        sellerName: "John Smith",
         orderNumber: "ORD-001240",
         datePlaced: "2024-01-20",
         status: "Shipped",
@@ -127,6 +134,7 @@ export const orders = [
     {
         id: 8,
         customerName: "Jennifer Martinez",
+        sellerName: "John Smith",
         orderNumber: "ORD-001241",
         datePlaced: "2024-01-14",
         status: "Completed",

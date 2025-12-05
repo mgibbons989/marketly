@@ -1,22 +1,22 @@
-import SectionCards from "./SectionCards"
+import SectionCards from "../components/SectionCards"
 
 export default function PendingOrders() {
 
-    const pendingOrdersData = [
+    const buyerPendingOrdersData = [
         {
-            customerName: "Sarah Johnson",
+            sellerName: "Sarah Johnson",
             orderNum: "ORD-1234",
             status: "Placed",
             datePlaced: "January 15, 2024",
         },
         {
-            customerName: "Michael Chen",
+            sellerName: "Michael Chen",
             orderNum: "ORD-1235",
             status: "Packing",
             datePlaced: "January 14, 2024",
         },
         {
-            customerName: "Emily Davis",
+            sellerName: "Emily Davis",
             orderNum: "ORD-1236",
             status: "Shipped",
             datePlaced: "January 13, 2024",
@@ -25,7 +25,7 @@ export default function PendingOrders() {
 
     return (
         <>
-            <SectionCards title="Pending Orders" items={pendingOrdersData} type="orders" />
+            <SectionCards title="Pending Orders" items={buyerPendingOrdersData} type="orders" mode="buyer" />
         </>
     );
 }

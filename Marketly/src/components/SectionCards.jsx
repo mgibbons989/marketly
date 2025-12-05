@@ -1,7 +1,7 @@
 import React from "react";
 import { AlertCircle } from "lucide-react"
 
-export default function SectionCards({ title, items, type }) {
+export default function SectionCards({ title, items, type, mode = "seller" }) {
     return (
         <section className="section">
             <h2 className="section-title">{title}</h2>
@@ -29,11 +29,24 @@ export default function SectionCards({ title, items, type }) {
                                     <div className="card-value">{item.qty}</div>
                                 </div>
 
-                                {item.qty === 0 && (
+                                {mode === "buyer" && item.qty == 0 && (
                                     <div className="stock-alert">
                                         <AlertCircle size={16} /> Out of Stock
                                     </div>
                                 )}
+
+                                {/* If seller: qty === 0 means out of inventory */}
+                                {mode === "seller" && item.qty === 0 && (
+                                    <div className="stock-alert">
+                                        <AlertCircle size={16} /> Out of Stock
+                                    </div>
+                                )}
+
+                                {/* {item.qty === 0 && (
+                                    <div className="stock-alert">
+                                        <AlertCircle size={16} /> Out of Stock
+                                    </div>
+                                )} */}
 
                             </>
                         )}
@@ -43,11 +56,15 @@ export default function SectionCards({ title, items, type }) {
                             <>
                                 <div>
                                     <div className="card-label">
-                                        Customer Name
+                                        {/* Customer Name */}
+                                        {mode === "seller" ? "Customer Name" : "Seller Name"}
                                     </div>
 
                                     <div className="card-value">
-                                        {item.customerName}
+                                        {/* {item.customerName} */}
+                                        {mode === "seller"
+                                            ? item.customerName
+                                            : item.sellerName}
                                     </div>
 
                                 </div>

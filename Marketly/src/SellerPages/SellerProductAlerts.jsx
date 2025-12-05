@@ -1,4 +1,4 @@
-import SectionCards from "./SectionCards"
+import SectionCards from "../components/SectionCards"
 
 export default function ProductAlerts() {
     const productsData = [
@@ -24,7 +24,7 @@ export default function ProductAlerts() {
 
     return (
         <>
-            <SectionCards title="Product Alerts" items={productsData} type="product" />
+            <SectionCards title="Product Alerts" items={productsData} type="product" mode="seller" />
         </>
     );
 

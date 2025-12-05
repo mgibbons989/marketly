@@ -6,19 +6,22 @@ import { HashRouter, Routes, Route } from "react-router-dom"
 import Signup from "./pages/Signup.jsx"
 import Login from "./pages/Login.jsx"
 import LandingPage from './pages/LandingPage.jsx'
+
+// import Seller Pages
 import SellerDB from './SellerPages/SellerDB.jsx'
 import ProductList from './SellerPages/ProductList.jsx'
 import Orders from "./SellerPages/Orders.jsx"
 import OrderDetails from './SellerPages/OrderDetails.jsx'
 import Shipments from './SellerPages/Shipments.jsx'
 
-// import Seller Pages
-
-
 // import Customer Pages
+import CustomerDB from './CustomerPages/CustomerDB.jsx'
+import Cart from './CustomerPages/Cart.jsx'
+import Checkout from './CustomerPages/Checkout.jsx'
 
 
 export default function App() {
+
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
@@ -26,15 +29,20 @@ export default function App() {
       <Route path="/login" element={<Login />} />
 
       <Route path="/seller/product-list" element={<ProductList />} />
-      <Route path="/seller/orders/" element={<Orders />} />
-      <Route path="/seller/order/:orderId" element={<OrderDetails />} />
+      <Route path="/seller/orders" element={<Orders mode='seller' />} />
+      <Route path="/seller/order/:orderId" element={<OrderDetails mode='seller' />} />
       <Route path="/seller/shipments" element={<Shipments />} />
-      <Route
-        path="/dashboard/seller"
-        element={<SellerDB />} /> {/*!!!!!!!!!!!!!!!!!!!temporary route*/}
+      <Route path="/dashboard/seller" element={<SellerDB />} />
+      {/*!!!!!!!!!!!!!!!!!!!temporary route*/}
 
 
-
+      <Route path="/customer/cart" element={<Cart />} />
+      <Route path="/customer/checkout" element={<Checkout />} />
+      <Route path="/customer/orders" element={<Orders mode='buyer' />} />
+      <Route path="/customer/order/:orderId" element={<OrderDetails mode='buyer' />} />
+      <Route path="/customer/shipments" element={<Shipments />} />
+      <Route path="/dashboard/customer" element={<CustomerDB />} />
+      {/*!!!!!!!!!!!!!!!!!!!temporary route*/}
 
       <Route path="*" element={<div>404 Not Found</div>} />
 
