@@ -10,6 +10,7 @@ import SellerDB from './SellerPages/SellerDB.jsx'
 import ProductList from './SellerPages/ProductList.jsx'
 import Orders from "./SellerPages/Orders.jsx"
 import OrderDetails from './SellerPages/OrderDetails.jsx'
+import Shipments from './SellerPages/Shipments.jsx'
 
 // import Seller Pages
 
@@ -23,13 +24,17 @@ export default function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
+
       <Route path="/seller/product-list" element={<ProductList />} />
       <Route path="/seller/orders/" element={<Orders />} />
-      <Route path="/seller/orders/:orderId" element={<OrderDetails />} />
-
+      <Route path="/seller/order/:orderId" element={<OrderDetails />} />
+      <Route path="/seller/shipments" element={<Shipments />} />
       <Route
         path="/dashboard/seller"
         element={<SellerDB />} /> {/*!!!!!!!!!!!!!!!!!!!temporary route*/}
+
+
+
 
       <Route path="*" element={<div>404 Not Found</div>} />
 

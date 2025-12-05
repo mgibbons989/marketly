@@ -209,15 +209,15 @@ body {
 /* Make this smoother !!!!!!!!!!!!!!! */
 
 .card-label {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: #666;
     margin-bottom: 0.5rem;
-    font-weight: 500;
+    font-weight: 560;
     text-transform: uppercase;
 }
 
 .card-value {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: #333;
     margin-bottom: 1rem;
     font-weight: 600;

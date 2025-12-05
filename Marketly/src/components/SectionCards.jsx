@@ -43,7 +43,7 @@ export default function SectionCards({ title, items, type }) {
                             <>
                                 <div>
                                     <div className="card-label">
-                                        Customer Name:
+                                        Customer Name
                                     </div>
 
                                     <div className="card-value">
@@ -54,7 +54,7 @@ export default function SectionCards({ title, items, type }) {
 
                                 <div>
                                     <div className="card-label">
-                                        Order Number:
+                                        Order Number
                                     </div>
 
                                     <div className="card-value">
@@ -65,7 +65,7 @@ export default function SectionCards({ title, items, type }) {
 
                                 <div>
                                     <div className="card-label">
-                                        Order Status:
+                                        Order Status
                                     </div>
 
                                     <div className="card-value">
@@ -78,7 +78,7 @@ export default function SectionCards({ title, items, type }) {
 
                                 <div>
                                     <div className="card-label">
-                                        Date Placed:
+                                        Date Placed
                                     </div>
 
                                     <div className="card-value">

@@ -26,7 +26,7 @@ export default function OrderCard({ order }) {
                     <p className="order-value">{order.dateCompleted}</p>
                 </div>
             )}
-            <Link to={`/order/${order.id}`} className="open-link">
+            <Link to={`/seller/order/${order.id}`} className="open-link">
                 Click to open →
             </Link>
         </div>
