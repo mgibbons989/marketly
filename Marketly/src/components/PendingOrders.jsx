@@ -12,13 +12,13 @@ export default function PendingOrders() {
         {
             customerName: "Michael Chen",
             orderNum: "ORD-1235",
-            status: "Packed",
+            status: "Packing",
             datePlaced: "January 14, 2024",
         },
         {
             customerName: "Emily Davis",
             orderNum: "ORD-1236",
-            status: "Pending Shipment",
+            status: "Shipped",
             datePlaced: "January 13, 2024",
         },
     ];

@@ -148,9 +148,21 @@ body {
 }
 
 .main-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem;
+    min-height: 100vh;
+    min-width: 100vw;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px;
+}
+
+.main-content {
+    width: 100%;
+    max-width: 1100px;
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 28px 28px 32px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(128, 0, 32, 0.08);
 }
 
 .overview-title {
@@ -201,6 +213,7 @@ body {
     color: #666;
     margin-bottom: 0.5rem;
     font-weight: 500;
+    text-transform: uppercase;
 }
 
 .card-value {
@@ -215,7 +228,7 @@ body {
     color: #1976d2;
 }
 
-.status-packed {
+.status-packing {
     background-color: #fff3e0;
     color: #f57c00;
 }
@@ -223,6 +236,11 @@ body {
 .status-pending {
     background-color: #fce4ec;
     color: #c2185b;
+}
+
+.status-shipped {
+    background-color: rgba(182, 253, 182, 0.685);
+    color: rgb(74, 134, 74)
 }
 
 .status-badge {

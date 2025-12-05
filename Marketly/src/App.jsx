@@ -8,6 +8,8 @@ import Login from "./pages/Login.jsx"
 import LandingPage from './pages/LandingPage.jsx'
 import SellerDB from './SellerPages/SellerDB.jsx'
 import ProductList from './SellerPages/ProductList.jsx'
+import Orders from "./SellerPages/Orders.jsx"
+import OrderDetails from './SellerPages/OrderDetails.jsx'
 
 // import Seller Pages
 
@@ -22,6 +24,8 @@ export default function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/seller/product-list" element={<ProductList />} />
+      <Route path="/seller/orders/" element={<Orders />} />
+      <Route path="/seller/orders/:orderId" element={<OrderDetails />} />
 
       <Route
         path="/dashboard/seller"

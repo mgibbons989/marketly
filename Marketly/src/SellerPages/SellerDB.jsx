@@ -12,11 +12,13 @@ export default function SellerDB() {
             <Header />
 
             <main className="main-container">
-                <h1 className="overview-title">Overview</h1>
+                <div className="main-content">
+                    <h1 className="overview-title">Overview</h1>
 
-                <PendingOrders />
-                <CurrentShipments />
-                <ProductAlerts />
+                    <PendingOrders />
+                    <CurrentShipments />
+                    <ProductAlerts />
+                </div>
             </main>
         </div>
     )
