@@ -1,11 +1,13 @@
 function Header() {
 
     return (
-        <header>
-            <div className="title">
-                <h1>Marketly</h1>
+        <header className="header">
+            <div className="header-container">
+                <h1 className="logo">Marketly</h1>
+                <button className="about-btn">About</button>
             </div>
         </header>
+
     );
 
 };

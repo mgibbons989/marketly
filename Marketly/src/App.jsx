@@ -1,30 +1,33 @@
 import React from 'react'
-import AuthTabs from './components/AuthTabs.jsx'   // <-- no curly braces
 import './styles.css'
+import { HashRouter, Routes, Route } from "react-router-dom"
+
+// import general pages
+import Signup from "./pages/Signup.jsx"
+import Login from "./pages/Login.jsx"
+import LandingPage from './pages/LandingPage.jsx'
+import SellerDB from './SellerPages/SellerDB.jsx'
+
+// import Seller Pages
+
+
+// import Customer Pages
+
 
 export default function App() {
   return (
-    <div className="page">
-      <div className="hero">
-        <div className="badge">Marketly</div>
-        <h1 className="headline">Welcome to Marketly</h1>
-        <p className="subtext">
-          Your modern marketplace for unique products and trusted sellers.
-        </p>
-        <ul className="bullets">
-          <li>Discover curated catalogs</li>
-          <li>Secure checkout & order tracking</li>
-          <li>Tools for sellers to grow faster</li>
-        </ul>
-      </div>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<Login />} />
 
-      <div className="formWrap">
-        <AuthTabs />
-        <p className="footnote">
-          By continuing, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
-        </p>
-      </div>
-    </div>
-  )
+      <Route
+        path="/dashboard/seller"
+        element={<SellerDB />} /> {/*!!!!!!!!!!!!!!!!!!!temporary route*/}
+
+      <Route path="*" element={<div>404 Not Found</div>} />
+
+    </Routes>
+  );
 }
 
