@@ -334,13 +334,17 @@ export default function Shipments({ mode = "seller" }) {
                             </select>
                         </div>
                     </div>
-
+                    {shipments.length === 0 ? (
+                        <div className="emptymessage">No Shipments Found</div>
+                    ) : (
+                        <div className="cards-grid">
+                            {filteredShipments.map((shipment) => (
+                                <ShipmentCard key={shipment.id} shipment={shipment} onOpen={() => handleExpandEdit(shipment)} mode={mode} />
+                            ))}
+                        </div>
+                    )}
                     {/* Shipments */}
-                    <div className="cards-grid">
-                        {filteredShipments.map((shipment) => (
-                            <ShipmentCard key={shipment.id} shipment={shipment} onOpen={() => handleExpandEdit(shipment)} mode={mode} />
-                        ))}
-                    </div>
+
 
                     {showAddModal && mode === "seller" && (
                         <div className="modal-overlay" onClick={handleAddModalBackdropClick}>

@@ -470,3 +470,7 @@ body {
     align-self: center;
     margin-top: 10px;
 }
+
+.emptymessage {
+    font-size: 1.1rem;
+}

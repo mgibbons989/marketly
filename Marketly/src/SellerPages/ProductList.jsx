@@ -211,40 +211,44 @@ export default function ProductList() {
                     </div>
 
                     {/* Product Cards */}
+                    {products.length === 0 ? (
+                        <div className="emptymessage">No Products Found</div>
+                    ) : (
+                        <div className="products-grid">
+                            {filteredProducts.length === 0 ? (
+                                <p className="no-results">
+                                    No products match that search.
+                                </p>
+                            ) : (
+                                filteredProducts.map((product) => (
+                                    <div key={product.id} className="product-card">
+                                        <button
+                                            className="edit-icon-button"
+                                            onClick={() => openEditModal(product)}
+                                        >
+                                            <Pencil size={18} />
+                                        </button>
 
-                    <div className="products-grid">
-                        {filteredProducts.length === 0 ? (
-                            <p className="no-results">
-                                No products match that search.
-                            </p>
-                        ) : (
-                            filteredProducts.map((product) => (
-                                <div key={product.id} className="product-card">
-                                    <button
-                                        className="edit-icon-button"
-                                        onClick={() => openEditModal(product)}
-                                    >
-                                        <Pencil size={18} />
-                                    </button>
+                                        <div className="product-name">
+                                            {product.name}
+                                        </div>
+                                        {/* come back to this !!!!!!!!!!!! */}
+                                        <div className="product-image-wrap">
+                                            <img
+                                                src={product.image}
+                                                alt={product.name}
+                                                className="product-image"
+                                            />
+                                        </div>
+                                        <p className="product-quantity">
+                                            Quantity: {product.quantity}
+                                        </p>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
 
-                                    <div className="product-name">
-                                        {product.name}
-                                    </div>
-                                    {/* come back to this !!!!!!!!!!!! */}
-                                    <div className="product-image-wrap">
-                                        <img
-                                            src={product.image}
-                                            alt={product.name}
-                                            className="product-image"
-                                        />
-                                    </div>
-                                    <p className="product-quantity">
-                                        Quantity: {product.quantity}
-                                    </p>
-                                </div>
-                            ))
-                        )}
-                    </div>
 
                     {/* Add Product Modal */}
                     {isAddModalOpen && (

@@ -10,12 +10,19 @@ export default function ProductAlerts() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from("Products")
-                .select("pid, pname, stock")
+                .select("id, pname, stock")
                 .eq("seller_id", user.id);
 
-            const formatted = data.map(p => ({
+            if (error) {
+                console.error("Supabase error:", error);
+                setProducts([]);
+                return;
+            }
+
+            const rows = data || [];
+            const formatted = rows.map(p => ({
                 name: p.pname,
                 qty: p.stock,
             }));

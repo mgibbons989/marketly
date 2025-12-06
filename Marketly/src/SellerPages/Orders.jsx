@@ -171,12 +171,16 @@ export default function Orders({ mode = "seller" }) {
                             </button>
                         </div>
                     </div>
+                    {orders.length === 0 ? (
+                        <div className="emptymessage"> No Orders Found </div>
+                    ) : (
+                        <div className="orders-grid">
+                            {filteredOrders.map(order => (
+                                <OrderCard key={order.id} order={order} mode={mode} />
+                            ))}
+                        </div>
+                    )}
 
-                    <div className="orders-grid">
-                        {filteredOrders.map(order => (
-                            <OrderCard key={order.id} order={order} mode={mode} />
-                        ))}
-                    </div>
                 </div>
             </div>
         </>
