@@ -2,50 +2,77 @@ import Header from "../components/Header";
 import { useState, useEffect } from "react"
 import "./cart.css"
 import { useNavigate, Navigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
-const initialProducts = [
-    {
-        id: 1,
-        name: "Wireless Headphones",
-        seller: "AudioTech Co.",
-        price: 79.99,
-        quantity: 1,
-        image: "/wireless-headphones.png",
-        checked: false,
-    },
-    {
-        id: 2,
-        name: "Smart Watch",
-        seller: "TechWear Inc.",
-        price: 199.99,
-        quantity: 1,
-        image: "/smartwatch-lifestyle.png",
-        checked: false,
-    },
-    {
-        id: 3,
-        name: "Laptop Stand",
-        seller: "Office Essentials",
-        price: 34.99,
-        quantity: 2,
-        image: "/laptop-stand.png",
-        checked: false,
-    },
-]
 
 export default function Cart() {
     const navigate = useNavigate();
 
-    const [products, setProducts] = useState(() => {
-        if (typeof window === "undefined") return initialProducts;
+    const [cartItems, setCartItems] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-        const saved = sessionStorage.getItem("cartProducts");
-        return saved ? JSON.parse(saved) : initialProducts;
-    });
+    useEffect(() => {
+        async function loadCart() {
+            setLoading(true);
 
-    const handleBack = () => {
-        navigate(-1)
-    }
+            // get logged in user
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return alert("You must be logged in");
+
+            // find the cart row
+            let { data: cart } = await supabase
+                .from("Cart")
+                .select("cart_id")
+                .eq("customer_id", user.id)
+                .maybeSingle();
+
+            // if no cart exists, create one
+            if (!cart) {
+                const { data: newCart } = await supabase
+                    .from("Cart")
+                    .insert([{ customer_id: user.id }])
+                    .select()
+                    .single();
+                cart = newCart;
+            }
+
+            const cartId = cart.cart_id;
+
+            // load all items in the cart
+            const { data: items } = await supabase
+                .from("Cart_item")
+                .select("c_itemid, product_id, quantity, Products (pname, price, image, seller_id)")
+                .eq("cart_id", cartId);
+
+            // load seller names
+            const { data: sellers } = await supabase
+                .from("Users")
+                .select("uid, Fname, Lname");
+
+            const sellerMap = {};
+            sellers.forEach(s => {
+                sellerMap[s.uid] = `${s.Fname} ${s.Lname}`;
+            });
+
+            const formatted = items.map((item) => ({
+                id: item.c_itemid,
+                product_id: item.product_id,
+                name: item.Products.pname,
+                price: item.Products.price,
+                image: item.Products.image,
+                quantity: item.quantity,
+                seller: sellerMap[item.Products.seller_id],
+                checked: false,  // UI only
+            }));
+
+            setCartItems(formatted);
+            setLoading(false);
+        }
+
+        loadCart();
+    }, []);
+
+    const handleBack = () => navigate(-1)
 
     const handleCheckbox = (id) => {
         setProducts((prev) =>
@@ -54,47 +81,55 @@ export default function Cart() {
             )
         );
     };
-    const handleQuantityChange = (id, delta) => {
-        setProducts(products.map((p) => (p.id === id ? { ...p, quantity: Math.max(1, p.quantity + delta) } : p)))
-    }
 
-    const handleRemove = (id) => {
-        setProducts((prev) => {
-            const updated = prev.filter((p) => p.id !== id);
+    const handleQuantityChange = async (id, delta) => {
+        const item = cartItems.find(p => p.id === id);
+        const newQty = Math.max(1, item.quantity + delta);
 
-            // Also remove from storage if this item was saved from checkout
-            const stored = sessionStorage.getItem("cartProducts");
-            if (stored) {
-                const storedList = JSON.parse(stored).filter((p) => p.id !== id);
-                sessionStorage.setItem("cartProducts", JSON.stringify(storedList));
-            }
+        await supabase
+            .from("Cart_item")
+            .update({ quantity: newQty })
+            .eq("c_itemid", id);
 
-            return updated;
-        });
+        setCartItems(prev =>
+            prev.map(p =>
+                p.id === id ? { ...p, quantity: newQty } : p
+            )
+        );
     };
 
-    const checkedProducts = products.filter((p) => p.checked)
-    const itemCount = checkedProducts.length
-    const subtotal = checkedProducts.reduce(
+    const handleRemove = async (id) => {
+        await supabase
+            .from("Cart_item")
+            .delete()
+            .eq("c_itemid", id);
+
+        setCartItems(prev => prev.filter(p => p.id !== id));
+    };
+
+    const checkedItems = cartItems.filter((p) => p.checked);
+
+    const itemCount = checkedItems.length
+
+    const subtotal = checkedItems.reduce(
         (sum, p) => sum + p.price * p.quantity,
         0
     )
     const handleCheckout = () => {
-        const checkedProducts = products.filter(p => p.checked);
 
-        if (checkedProducts.length === 0) {
-            alert("Please select at least one item to checkout");
-            return;
-        }
+        if (checkedItems.length === 0)
+            return alert("Please select at least one item to checkout");
 
         const confirmCheckout = window.confirm("Are you sure you want to check out now?");
         if (!confirmCheckout) return;
 
         // Save only checked items to sessionStorage
-        sessionStorage.setItem("cartProducts", JSON.stringify(checkedProducts));
+        sessionStorage.setItem("checkoutItems", JSON.stringify(checkedItems));
 
         navigate("/customer/checkout");
     };
+
+    if (loading) return <p>Loading...</p>;
 
     return (
         <>

@@ -3,10 +3,56 @@ import "../landing.css";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 
+import { supabase } from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
+
 export default function LandingPage() {
     const [activeTab, setActiveTab] = useState("customer");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [errorMsg, setErrorMsg] = useState("");
+    const navigate = useNavigate();
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        setErrorMsg("");
+
+        const { data: { user }, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if (error) {
+            setErrorMsg(error.message);
+            return;
+        }
+
+        // --- CHECK IF CUSTOMER ---
+        const { data: cust, error: custErr } = await supabase
+            .from("Customer")
+            .select("uid")
+            .eq("uid", user.id)
+            .single();
+
+        if (cust) {
+            navigate("/dashboard/customer");
+            return;
+        }
+
+        // CHECK SELLER
+        const { data: seller } = await supabase
+            .from("Seller")
+            .select("uid, business_name")
+            .eq("uid", user.id)
+            .single();
+
+        if (seller) {
+            navigate("/dashboard/seller");
+            return;
+        }
+
+        setErrorMsg("User has no assigned role.");
+    }
 
     return (
         <div className="Landingpage">
@@ -55,7 +101,7 @@ export default function LandingPage() {
 
                         {/* Form */}
                         <form
-                            onSubmit={(e) => e.preventDefault()}
+                            onSubmit={handleLogin}
                             className="form"
                         >
                             <div className="form-group">

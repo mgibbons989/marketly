@@ -1,35 +1,13 @@
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import Header from "../components/Header";
 import { Search, Plus, Pencil } from 'lucide-react';
 import "./prodList.css"
+import { supabase } from "../supabaseClient";
 
-const INITIAL_PRODUCTS = [
-    {
-        id: 1,
-        name: 'Burgundy Tote Bag',
-        quantity: 15,
-        image:
-            '',
-    },
-    {
-        id: 2,
-        name: 'Beige Knit Sweater',
-        quantity: 8,
-        image:
-            '',
-    },
-    {
-        id: 3,
-        name: 'Maroon Coffee Mug',
-        quantity: 32,
-        image:
-            '',
-    },
-]
 
 export default function ProductList() {
 
-    const [products, setProducts] = useState(INITIAL_PRODUCTS)
+    const [products, setProducts] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -72,23 +50,38 @@ export default function ProductList() {
         setAddForm((prev) => ({ ...prev, [name]: value }))
     }
 
-    const handleAddConfirm = (e) => {
-        e.preventDefault()
+    const handleAddConfirm = async (e) => {
+        e.preventDefault();
 
-        const newProduct = {
-            id: Date.now(),
-            name: addForm.name || 'Untitled Product',
-            quantity: Number(addForm.quantity) || 0,
-            image:
-                addForm.image ||
-                '',
+        const { data: { user } } = await supabase.auth.getUser();
+
+        const { data, error } = await supabase
+            .from("Products")
+            .insert({
+                pname: addForm.name,
+                stock: Number(addForm.quantity),
+                image: addForm.image,
+                seller_id: user.id
+            })
+            .select()
+            .single();
+
+        if (error) {
+            alert("Could not create product.");
+            return;
         }
 
-        setProducts((prev) => [...prev, newProduct])
-        setIsAddModalOpen(false)
-    }
+        setProducts(prev => [...prev, {
+            id: data.pid,
+            name: data.pname,
+            quantity: data.stock,
+            image: data.image
+        }]);
 
-    // ---------- Edit Product Modal ----------
+        setIsAddModalOpen(false);
+    };
+
+    // edit product
     const openEditModal = (product) => {
         setEditForm({
             id: product.id,
@@ -108,34 +101,82 @@ export default function ProductList() {
         setEditForm((prev) => ({ ...prev, [name]: value }))
     }
 
-    const handleEditConfirm = (e) => {
-        e.preventDefault()
+    const handleEditConfirm = async (e) => {
+        e.preventDefault();
+
+        const { error } = await supabase
+            .from("Products")
+            .update({
+                pname: editForm.name,
+                stock: Number(editForm.quantity),
+                image: editForm.image
+            })
+            .eq("pid", editForm.id);
+
+        if (error) {
+            alert("Failed to update product.");
+            return;
+        }
+
         setProducts((prev) =>
             prev.map((p) =>
                 p.id === editForm.id
-                    ? {
-                        ...p,
-                        name: editForm.name,
-                        quantity: Number(editForm.quantity) || 0,
-                        image: editForm.image,
-                    }
+                    ? { ...p, name: editForm.name, quantity: Number(editForm.quantity), image: editForm.image }
                     : p
             )
-        )
-        setIsEditModalOpen(false)
-    }
+        );
 
-    const handleDeleteProduct = () => {
-        const confirmed = window.confirm(
-            'Are you sure you want to delete this product?'
-        )
-        if (!confirmed) return
+        setIsEditModalOpen(false);
+    };
 
-        setProducts((prev) =>
-            prev.filter((p) => p.id !== editForm.id)
-        )
-        setIsEditModalOpen(false)
-    }
+    const handleDeleteProduct = async () => {
+        const confirmed = window.confirm("Are you sure you want to delete this product?");
+        if (!confirmed) return;
+
+        const { error } = await supabase
+            .from("Products")
+            .delete()
+            .eq("pid", editForm.id);
+
+        if (error) {
+            alert("Could not delete product.");
+            return;
+        }
+
+        // Update UI
+        setProducts(prev => prev.filter(p => p.id !== editForm.id));
+        setIsEditModalOpen(false);
+    };
+
+    useEffect(() => {
+        async function loadProducts() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+
+            const { data, error } = await supabase
+                .from("Products")
+                .select("id, pname, stock, image")
+                .eq("seller_id", user.id);
+
+            if (error) {
+                console.error("Error loading products:", error);
+                return;
+            }
+
+
+            const mapped = data.map((p) => ({
+                id: p.id,
+                name: p.pname,
+                quantity: p.stock,
+                image: p.image || ""
+            }));
+
+            setProducts(mapped);
+        }
+
+        loadProducts();
+    }, []);
 
     return (
         <>
@@ -217,12 +258,6 @@ export default function ProductList() {
                             >
                                 <div className="modal-title">
                                     <h2>Add New Product to List</h2>
-                                    {/* <button
-                                        className="icon-button close-button"
-                                        onClick={closeAddModal}
-                                    >
-                                        <X size={18} />
-                                    </button> */}
                                 </div>
 
                                 <form

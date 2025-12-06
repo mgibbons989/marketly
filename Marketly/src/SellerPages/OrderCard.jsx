@@ -7,8 +7,8 @@ export default function OrderCard({ order, mode = "seller" }) {
 
     const detailLink =
         mode === "seller"
-            ? `/seller/order/${order.id}`
-            : `/customer/order/${order.id}`;
+            ? `/seller/order/${order.orderNumber}`
+            : `/customer/order/${order.orderNumber}`;
 
     return (
         <div key={order.id} className="order-card">

@@ -1,31 +1,37 @@
-import SectionCards from "../components/SectionCards"
+import { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient";
+import SectionCards from "../components/SectionCards";
 
 export default function ProductAlerts() {
-    const productsData = [
-        {
-            id: 1,
-            name: "Wireless Headphones",
-            qty: 15,
-            outOfStock: false,
-        },
-        {
-            id: 2,
-            name: "Smart Watch",
-            qty: 0,
-            image: "",
-        },
-        {
-            id: 3,
-            name: "Laptop Stand",
-            qty: 8,
-            image: "",
-        },
-    ];
+    const [products, setProducts] = useState([]);
+
+    useEffect(() => {
+        async function fetchProducts() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data } = await supabase
+                .from("Products")
+                .select("pid, pname, stock")
+                .eq("seller_id", user.id);
+
+            const formatted = data.map(p => ({
+                name: p.pname,
+                qty: p.stock,
+            }));
+
+            setProducts(formatted);
+        }
+
+        fetchProducts();
+    }, []);
 
     return (
-        <>
-            <SectionCards title="Product Alerts" items={productsData} type="product" mode="seller" />
-        </>
+        <SectionCards
+            title="Product Alerts"
+            items={products}
+            type="product"
+            mode="seller"
+        />
     );
-
 }

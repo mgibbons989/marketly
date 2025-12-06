@@ -2,78 +2,56 @@ import Header from "../components/Header";
 import React, { useState, useEffect } from "react";
 import { Search, Minus, Plus, X } from "lucide-react";
 import "./catalog.css";
-
-const products = [
-    {
-        id: 1,
-        name: "Wireless Headphones",
-        seller: "TechGear Co",
-        price: 89.99,
-        image: "/wireless-headphones.png",
-    },
-    {
-        id: 2,
-        name: "Smart Watch",
-        seller: "WearableTech",
-        price: 199.99,
-        image: "/smartwatch-lifestyle.png",
-    },
-    {
-        id: 3,
-        name: "Laptop Stand",
-        seller: "OfficeMax",
-        price: 45.5,
-        image: "/laptop-stand.png",
-    },
-    {
-        id: 4,
-        name: "USB-C Cable",
-        seller: "TechGear Co",
-        price: 12.99,
-        image: "/usb-cable.png",
-    },
-    {
-        id: 5,
-        name: "Mechanical Keyboard",
-        seller: "KeyMasters",
-        price: 129.99,
-        image: "/mechanical-keyboard.png",
-    },
-    {
-        id: 6,
-        name: "Ergonomic Mouse",
-        seller: "OfficeMax",
-        price: 34.99,
-        image: "/ergonomic-mouse.png",
-    },
-    {
-        id: 7,
-        name: "Portable SSD",
-        seller: "DataStore",
-        price: 79.99,
-        image: "/portable-ssd.jpg",
-    },
-    {
-        id: 8,
-        name: "Webcam HD",
-        seller: "WearableTech",
-        price: 59.99,
-        image: "/classic-webcam.png",
-    },
-]
+import { supabase } from "../supabaseClient";
 
 
 export default function Catalog() {
 
+    const [products, setProducts] = useState([]);
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [quantity, setQuantity] = useState(1)
     const [showSuccess, setShowSuccess] = useState(false)
 
-    const filteredProducts = products.filter((product) => {
-        const query = searchQuery.toLowerCase()
-        return product.name.toLowerCase().includes(query) || product.seller.toLowerCase().includes(query)
-    })
+    useEffect(() => {
+        async function loadProducts() {
+            let { data: productsData } = await supabase
+                .from("Products")
+                .select("pid, pname, price, stock, image, seller_id");
+
+            // get all sellers 
+            let { data: sellersData } = await supabase
+                .from("Users")
+                .select("uid, Fname, Lname");
+
+            const sellerMap = {};
+            sellersData.forEach((s) => {
+                sellerMap[s.uid] = `${s.Fname} ${s.Lname}`;
+            });
+
+            const formatted = productsData.map((p) => ({
+                id: p.pid,
+                name: p.pname,
+                price: p.price,
+                stock: p.stock,
+                sellerName: sellerMap[p.seller_id] || "Unknown Seller",
+                image: p.image || "/placeholder.svg",
+                seller_id: p.seller_id,
+            }));
+
+            setProducts(formatted);
+        }
+
+        loadProducts();
+    }, []);
+
+    const filteredProducts = products.filter((p) => {
+        const q = searchQuery.toLowerCase();
+        return (
+            p.name.toLowerCase().includes(q) ||
+            p.sellerName.toLowerCase().includes(q)
+        );
+    });
 
     const handleCardClick = (product) => {
         setSelectedProduct(product)
@@ -93,29 +71,68 @@ export default function Catalog() {
         setQuantity((prev) => prev + 1)
     }
 
-    const handleAddToCart = () => {
-        // Here you would typically add the item to cart state/context
-        const existing = JSON.parse(localStorage.getItem("cart")) || [];
-        const found = existing.find((item) => item.id === selected.id);
+    const handleAddToCart = async () => {
+        const productId = selectedProduct.id;
 
-        if (found) {
-            found.quantity += quantity;
-        } else {
-            existing.push({ ...selectedProduct, quantity });
+        // get current user
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return alert("You must be logged in!");
+
+        // find or create a cart for the user
+        const { data: cart } = await supabase
+            .from("Cart")
+            .select("cart_id")
+            .eq("customer_id", user.id)
+            .single();
+
+        let cartId = cart?.cart_id;
+
+        if (!cartId) {
+            // create new cart
+            const { data: newCart } = await supabase
+                .from("Cart")
+                .insert([{ customer_id: user.id }])
+                .select()
+                .single();
+
+            cartId = newCart.cart_id;
         }
 
-        localStorage.setItem("cart", JSON.stringify(existing));
-        console.log(`Added ${quantity}x ${selectedProduct.name} to cart`)
+        // does this product already exist in cart?
+        const { data: existingItem } = await supabase
+            .from("Cart_item")
+            .select("quantity")
+            .eq("cart_id", cartId)
+            .eq("product_id", productId)
+            .maybeSingle();
 
-        handleCloseModal()
-        setShowSuccess(true)
+        if (existingItem) {
+            // update quantity
+            await supabase
+                .from("Cart_item")
+                .update({
+                    quantity: existingItem.quantity + quantity,
+                })
+                .eq("cart_id", cartId)
+                .eq("product_id", productId);
+        } else {
+            // insert new item
+            await supabase.from("Cart_item").insert([
+                {
+                    cart_id: cartId,
+                    product_id: productId,
+                    quantity: quantity,
+                },
+            ]);
+        }
 
-        // Hide success message after 2.5 seconds
-        setTimeout(() => {
-            setShowSuccess(false)
-        }, 2500)
-    }
+        handleCloseModal();
+        setShowSuccess(true);
 
+        setTimeout(() => setShowSuccess(false), 2500);
+    };
     return (
         <>
             <Header mode="buyer" />

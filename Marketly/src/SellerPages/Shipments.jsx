@@ -3,68 +3,22 @@ import Header from "../components/Header";
 import React, { useState, useEffect } from "react"
 import { Search, Plus, X } from "lucide-react"
 import "./shipments.css"
+import { supabase } from "../supabaseClient";
 import ShipmentCard from "./ShipmentCard";
 
-const initialShipments = [
-    {
-        id: 1,
-        customerName: "John Doe",
-        orderNumber: "ORD-2024-001",
-        carrier: "FedEx",
-        trackingNumber: "1234567890",
-        status: "Shipped",
-        address: "123 Main St, New York, NY 10001",
-    },
-    {
-        id: 2,
-        customerName: "Jane Smith",
-        orderNumber: "ORD-2024-002",
-        carrier: "UPS",
-        trackingNumber: "0987654321",
-        status: "Pending",
-        address: "456 Oak Ave, Los Angeles, CA 90001",
-    },
-    {
-        id: 3,
-        customerName: "Bob Johnson",
-        orderNumber: "ORD-2024-003",
-        carrier: "USPS",
-        trackingNumber: "5551234567",
-        status: "Delivered",
-        address: "789 Pine Rd, Chicago, IL 60601",
-    },
-]
-const availableOrders = [
-    {
-        orderNumber: "ORD-2024-004",
-        customerName: "Alice Williams",
-        address: "321 Elm St, Houston, TX 77001",
-    },
-    {
-        orderNumber: "ORD-2024-005",
-        customerName: "Charlie Brown",
-        address: "654 Maple Dr, Phoenix, AZ 85001",
-    },
-    {
-        orderNumber: "ORD-2024-006",
-        customerName: "Diana Prince",
-        address: "987 Cedar Ln, Philadelphia, PA 19101",
-    },
-    {
-        orderNumber: "ORD-2024-007",
-        customerName: "Ethan Hunt",
-        address: "147 Birch Ct, San Antonio, TX 78201",
-    },
-]
-
 export default function Shipments({ mode = "seller" }) {
-    const [shipments, setShipments] = useState(initialShipments)
+
+    const [availableOrders, setAvailableOrders] = useState([]);
+    const [shipments, setShipments] = useState([])
     const [searchQuery, setSearchQuery] = useState("")
     const [filterStatus, setFilterStatus] = useState("All")
+
     const [selectedShipment, setSelectedShipment] = useState(null)
     const [editedShipment, setEditedShipment] = useState(null)
+
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
     const [showUnsavedWarning, setShowUnsavedWarning] = useState(false)
+
     const [showAddModal, setShowAddModal] = useState(false)
     const [newShipment, setNewShipment] = useState({
         orderNumber: "",
@@ -73,39 +27,48 @@ export default function Shipments({ mode = "seller" }) {
         status: "Pending",
     })
 
-    const filteredShipments = shipments.filter((shipment) => {
+    const filteredShipments = shipments.filter((s) => {
         const matchesSearch =
-            shipment.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            shipment.orderNumber.toLowerCase().includes(searchQuery.toLowerCase())
+            s.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            s.orderNumber.toString().includes(searchQuery);
 
         const matchesFilter =
             filterStatus === "All" ||
-            (filterStatus === "In Progress" && (shipment.status === "Pending" || shipment.status === "Shipped")) ||
-            (filterStatus === "Completed" && shipment.status === "Delivered")
+            (filterStatus === "In Progress" && (s.status === "Pending" || s.status === "Shipped")) ||
+            (filterStatus === "Completed" && s.status === "Delivered");
 
-        return matchesSearch && matchesFilter
-    })
+        return matchesSearch && matchesFilter;
+    });
 
     // Open edit modal
     const handleExpandEdit = (shipment) => {
-        setSelectedShipment(shipment)
-        setEditedShipment({ ...shipment })
-        setHasUnsavedChanges(false)
+        setSelectedShipment(shipment);
+        setEditedShipment({ ...shipment });
+        setHasUnsavedChanges(false);
     }
 
-    // Handle field changes
+    // Handle input changes
     const handleFieldChange = (field, value) => {
         setEditedShipment((prev) => ({ ...prev, [field]: value }))
         setHasUnsavedChanges(true)
     }
 
     // Save changes
-    const handleSaveChanges = () => {
-        setShipments((prev) => prev.map((s) => (s.id === editedShipment.id ? editedShipment : s)))
-        setSelectedShipment(null)
-        setEditedShipment(null)
-        setHasUnsavedChanges(false)
-    }
+    const handleSaveChanges = async () => {
+        const { error } = await supabase
+            .from("Shipment")
+            .update({
+                carrier: editedShipment.carrier,
+                tracking_num: editedShipment.trackingNumber,
+                status: editedShipment.status,
+            })
+            .eq("shipment_id", editedShipment.id);
+
+        if (error) return alert(error.message);
+
+        alert("Shipment updated!");
+        window.location.reload();
+    };
 
     // Cancel changes
     const handleCancel = () => {
@@ -113,72 +76,228 @@ export default function Shipments({ mode = "seller" }) {
         setEditedShipment(null)
         setHasUnsavedChanges(false)
         setShowUnsavedWarning(false)
-    }
+    };
 
     // Handle backdrop click
-    const handleBackdropClick = (e) => {
-        if (e.target.classList.contains("modal-overlay")) {
-            if (hasUnsavedChanges) {
-                setShowUnsavedWarning(true)
-            } else {
-                handleCancel()
-            }
-        }
-    }
+    // const handleBackdropClick = (e) => {
+    //     if (e.target.classList.contains("modal-overlay")) {
+    //         if (hasUnsavedChanges) {
+    //             setShowUnsavedWarning(true)
+    //         } else {
+    //             handleCancel()
+    //         }
+    //     }
+    // }
     const handleAddShipment = () => {
-        setShowAddModal(true)
+        setShowAddModal(true);
         setNewShipment({
             orderNumber: "",
             carrier: "",
             trackingNumber: "",
             status: "Pending",
-        })
-        setHasUnsavedChanges(false)
-    }
+        });
+        setHasUnsavedChanges(false);
+    };
 
     const handleNewShipmentChange = (field, value) => {
-        setNewShipment((prev) => ({ ...prev, [field]: value }))
-        setHasUnsavedChanges(true)
-    }
+        setNewShipment((prev) => ({ ...prev, [field]: value }));
+        setHasUnsavedChanges(true);
+    };
 
-    const handleSaveNewShipment = () => {
+    const handleSaveNewShipment = async () => {
         if (!newShipment.orderNumber || !newShipment.carrier || !newShipment.trackingNumber) {
-            alert("Please fill in all required fields")
-            return
+            alert("Please fill in all required fields");
+            return;
         }
 
-        const selectedOrder = availableOrders.find((order) => order.orderNumber === newShipment.orderNumber)
+        const choice = availableOrders.find(
+            (o) => o.orderNumber === newShipment.orderNumber
+        );
 
-        const shipmentToAdd = {
-            id: Math.max(...shipments.map((s) => s.id)) + 1,
-            customerName: selectedOrder.customerName,
-            orderNumber: newShipment.orderNumber,
+        if (!choice) {
+            alert("Order not valid for shipment.");
+            return;
+        }
+
+        const { error } = await supabase.from("Shipment").insert({
+            sub_id: choice.sub_id,
             carrier: newShipment.carrier,
-            trackingNumber: newShipment.trackingNumber,
+            tracking_num: newShipment.trackingNumber,
             status: newShipment.status,
-            address: selectedOrder.address,
+            created_on: new Date().toISOString(),
+        });
+
+        if (error) {
+            alert(error.message);
+            return;
         }
 
-        setShipments((prev) => [...prev, shipmentToAdd])
-        setShowAddModal(false)
-        setHasUnsavedChanges(false)
-    }
+        alert("Shipment created!");
+        setShowAddModal(false);
+        setHasUnsavedChanges(false);
+        window.location.reload();
+    };
 
     const handleCancelAdd = () => {
-        setShowAddModal(false)
-        setHasUnsavedChanges(false)
-        setShowUnsavedWarning(false)
-    }
+        setShowAddModal(false);
+        setHasUnsavedChanges(false);
+        setShowUnsavedWarning(false);
+    };
 
-    const handleAddModalBackdropClick = (e) => {
-        if (e.target.classList.contains("modal-overlay")) {
-            if (hasUnsavedChanges) {
-                setShowUnsavedWarning(true)
-            } else {
-                handleCancelAdd()
+    // const handleAddModalBackdropClick = (e) => {
+    //     if (e.target.classList.contains("modal-overlay")) {
+    //         if (hasUnsavedChanges) {
+    //             setShowUnsavedWarning(true)
+    //         } else {
+    //             handleCancelAdd()
+    //         }
+    //     }
+    // }
+
+    useEffect(() => {
+        async function loadShipments() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            let final = [];
+
+            // seller
+            if (mode === "seller") {
+                const { data: subs } = await supabase
+                    .from("Sub_order")
+                    .select("sub_id, order_id")
+                    .eq("seller_id", user.id);
+
+                if (!subs) return;
+
+                // Load shipments for suborders
+                for (const sub of subs) {
+                    const { data: ship } = await supabase
+                        .from("Shipment")
+                        .select("shipment_id, carrier, tracking_num, status, created_on")
+                        .eq("sub_id", sub.sub_id)
+                        .maybeSingle();
+
+                    if (!ship) continue;
+
+                    const { data: order } = await supabase
+                        .from("Order")
+                        .select("order_num, cust_id")
+                        .eq("order_num", sub.order_id)
+                        .single();
+
+                    const { data: cust } = await supabase
+                        .from("Users")
+                        .select("Fname, Lname")
+                        .eq("uid", order.cust_id)
+                        .single();
+
+                    const { data: custAddr } = await supabase
+                        .from("Customer")
+                        .select("address")
+                        .eq("uid", order.cust_id)
+                        .single();
+
+                    final.push({
+                        id: ship.shipment_id,
+                        customerName: `${cust.Fname} ${cust.Lname}`,
+                        orderNumber: order.order_num,
+                        carrier: ship.carrier,
+                        trackingNumber: ship.tracking_num,
+                        status: ship.status,
+                        address: custAddr?.address || "",
+                        sub_id: sub.sub_id,
+                    });
+                }
+
+                // Load orders for new shipment creation
+                const openSubs = [];
+
+                for (const sub of subs) {
+                    const { data: existing } = await supabase
+                        .from("Shipment")
+                        .select("shipment_id")
+                        .eq("sub_id", sub.sub_id)
+                        .maybeSingle();
+
+                    if (existing) continue;
+
+                    const { data: ord } = await supabase
+                        .from("Order")
+                        .select("order_num, cust_id")
+                        .eq("order_num", sub.order_id)
+                        .single();
+
+                    const { data: cust } = await supabase
+                        .from("Users")
+                        .select("Fname, Lname")
+                        .eq("uid", ord.cust_id)
+                        .single();
+
+                    const { data: custAddr } = await supabase
+                        .from("Customer")
+                        .select("address")
+                        .eq("uid", ord.cust_id)
+                        .single();
+
+                    openSubs.push({
+                        sub_id: sub.sub_id,
+                        orderNumber: ord.order_num,
+                        customerName: `${cust.Fname} ${cust.Lname}`,
+                        address: custAddr?.address || "",
+                    });
+                }
+
+                setAvailableOrders(openSubs);
             }
+
+            // customer
+            else {
+                const { data: orders } = await supabase
+                    .from("Order")
+                    .select("order_num")
+                    .eq("cust_id", user.id);
+
+                for (const ord of orders) {
+                    const { data: subs } = await supabase
+                        .from("Sub_order")
+                        .select("sub_id, seller_id")
+                        .eq("order_id", ord.order_num);
+
+                    for (const sub of subs) {
+                        const { data: ship } = await supabase
+                            .from("Shipment")
+                            .select("shipment_id, carrier, tracking_num, status")
+                            .eq("sub_id", sub.sub_id)
+                            .maybeSingle();
+
+                        if (!ship) continue;
+
+                        const { data: seller } = await supabase
+                            .from("Users")
+                            .select("Fname, Lname")
+                            .eq("uid", sub.seller_id)
+                            .single();
+
+                        final.push({
+                            id: ship.shipment_id,
+                            customerName: `${seller.Fname} ${seller.Lname}`,
+                            orderNumber: ord.order_num,
+                            carrier: ship.carrier,
+                            trackingNumber: ship.tracking_num,
+                            status: ship.status,
+                            address: "See order details page",
+                            sub_id: sub.sub_id,
+                        });
+                    }
+                }
+            }
+
+            setShipments(final);
         }
-    }
+
+        loadShipments();
+    }, [mode]);
 
     return (
         <>
@@ -199,7 +318,7 @@ export default function Shipments({ mode = "seller" }) {
                         </div>
                     </div>
 
-                    {/* Header with Title and Actions */}
+                    {/* Header */}
                     <div className="header-row">
                         <h1 className="title">Shipments</h1>
                         <div className="actions">
@@ -216,7 +335,7 @@ export default function Shipments({ mode = "seller" }) {
                         </div>
                     </div>
 
-                    {/* Shipment Cards */}
+                    {/* Shipments */}
                     <div className="cards-grid">
                         {filteredShipments.map((shipment) => (
                             <ShipmentCard key={shipment.id} shipment={shipment} onOpen={() => handleExpandEdit(shipment)} mode={mode} />

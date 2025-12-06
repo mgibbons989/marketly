@@ -3,11 +3,13 @@ import { Bell, ShoppingCart, Plus, Minus } from "lucide-react"
 import NotificationsDropdown from "./NotificationsDropdown"
 import "../styles.css"
 import { useLocation } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 
 function Header({ mode = "seller" }) {
     const location = useLocation();
     const isLandingPage = location.pathname === "/";
+    const isSignupPage = location.pathname === "/signup";
 
     const [openNotif, setOpenNotif] = useState(false)
     const [openCart, setOpenCart] = useState(false)
@@ -17,6 +19,8 @@ function Header({ mode = "seller" }) {
     const notifDropdownRef = useRef()
     const cartRef = useRef()
     const cartDropdownRef = useRef()
+
+    const [userName, setUserName] = useState("");
 
     const [cartItems, setCartItems] = useState([
         { id: 1, name: "Red Sneakers", qty: 1, img: "https://via.placeholder.com/50" },
@@ -61,6 +65,42 @@ function Header({ mode = "seller" }) {
         document.addEventListener("mousedown", handleClick)
         return () => document.removeEventListener("mousedown", handleClick)
     }, [])
+    // Get name
+    useEffect(() => {
+        async function fetchUserName() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            let profileName = "";
+
+            const { data: seller } = await supabase
+                .from("Seller")
+                .select("business_name")
+                .eq("uid", user.id)
+                .maybeSingle();
+
+            if (seller) {
+                profileName = seller.business_name;
+                setUserName(profileName);
+                return;
+            }
+
+            const { data: cust } = await supabase
+                .from("Customer")
+                .select("Fname, Lname")
+                .eq("uid", user.id)
+                .maybeSingle();
+
+            if (cust) {
+                profileName = `${cust.Fname} ${cust.Lname}`;
+                setUserName(profileName);
+                return;
+            }
+
+        }
+
+        fetchUserName();
+    }, []);
 
     const navLinks = [
         {
@@ -86,12 +126,11 @@ function Header({ mode = "seller" }) {
             <div className="header-container">
                 <h1 className="logo">Marketly</h1>
 
-                {!isLandingPage && (
+                {!isLandingPage && !isSignupPage && (
                     <div className="header-right">
                         {/* Profile */}
                         <div className="profile">
-                            <div className="profile-pic"></div>
-                            <span className="profile-name">{mode === "seller" ? "Seller Name" : "Buyer Name"}</span>
+                            <span className="profile-name">{userName || (mode === "seller" ? "Seller" : "Customer")}</span>
                         </div>
 
                         {/* Notifications */}
@@ -183,7 +222,7 @@ function Header({ mode = "seller" }) {
 
             </div>
             {/* TOP NAVIGATION BAR */}
-            {!isLandingPage && (
+            {!isLandingPage && !isSignupPage && (
                 <nav className="top-nav">
                     <ul>
                         {navLinks.map(link => (

@@ -135,8 +135,6 @@ export default function SectionCards({ title, items, type, mode = "seller" }) {
                         )}
                     </div>
                 ))}
-
-                <button className="more-btn">...more</button>
             </div>
         </section>
     );

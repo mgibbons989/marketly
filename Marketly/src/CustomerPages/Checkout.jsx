@@ -1,6 +1,7 @@
 import Header from "../components/Header";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 export default function Checkout() {
     const navigate = useNavigate();
@@ -15,22 +16,18 @@ export default function Checkout() {
         zipCode: "",
     })
 
-    const [address, setAddress] = useState("")
-    const [errors, setErrors] = useState({})
-
+    const [address, setAddress] = useState("");
+    const [errors, setErrors] = useState({});
+    const [processing, setProcessing] = useState(false);
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const saved = sessionStorage.getItem("cartProducts")
-            if (saved) {
-                const allProducts = JSON.parse(saved)
-                setProducts(allProducts.filter((p) => p.checked))
-            }
+        const saved = sessionStorage.getItem("checkoutItems");
+        if (saved) {
+            setProducts(JSON.parse(saved));
         }
     }, [])
-    const handleBackToCart = () => {
-        navigate("/customer/cart")
-    }
+
+    const handleBackToCart = () => navigate("/customer/cart");
 
     const validateForm = () => {
         const newErrors = {}
@@ -76,20 +73,127 @@ export default function Checkout() {
         return Object.keys(newErrors).length === 0
     }
 
-    const handlePlaceOrder = () => {
-        if (validateForm()) {
-            alert("Order placed successfully!")
-            if (typeof window !== "undefined") {
-                sessionStorage.removeItem("cartProducts")
-            }
-            navigate("/dashboard/customer")
+    const handlePlaceOrder = async () => {
+        if (!validateForm()) return;
+        setProcessing(true);
+
+        // get logged in user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            alert("You must be logged in");
+            setProcessing(false);
+            return;
         }
-    }
 
-    const subtotal = products.reduce((sum, p) => sum + p.price * p.quantity, 0)
-    const tax = subtotal * 0.08
-    const total = subtotal + tax
+        // create Order row
+        const subtotal = products.reduce((sum, p) => sum + p.price * p.quantity, 0);
+        const tax = subtotal * 0.08;
+        const total = subtotal + tax;
 
+        const { data: newOrder, error: orderErr } = await supabase
+            .from("Order")
+            .insert([
+                {
+                    cust_id: user.id,
+                    total,
+                    status: "Placed",
+                    createdOn: new Date().toISOString(),
+                },
+            ])
+            .select()
+            .single();
+
+        if (orderErr) {
+            console.error(orderErr);
+            alert("Failed to create order.");
+            setProcessing(false);
+            return;
+        }
+
+        const orderId = newOrder.order_num;
+
+        // group products by seller
+        const bySeller = {};
+        products.forEach((p) => {
+            if (!bySeller[p.seller_id]) bySeller[p.seller_id] = [];
+            bySeller[p.seller_id].push(p);
+        });
+
+        // create Sub_orders and Order_items
+        for (const sellerId of Object.keys(bySeller)) {
+            const { data: subOrder, error: subErr } = await supabase
+                .from("Sub_order")
+                .insert([
+                    {
+                        seller_id: sellerId,
+                        order_id: orderId,
+                        status: "Placed",
+                    },
+                ])
+                .select()
+                .single();
+
+            if (subErr) {
+                console.error(subErr);
+                alert("Error creating sub-order.");
+                setProcessing(false);
+                return;
+            }
+
+            const subId = subOrder.sub_id;
+
+            // insert items for this seller
+            const itemsToInsert = bySeller[sellerId].map((p) => ({
+                sub_id: subId,
+                product_id: p.product_id,
+                quantity: p.quantity,
+            }));
+
+            const { error: itemErr } = await supabase
+                .from("Order_item")
+                .insert(itemsToInsert);
+
+            if (itemErr) {
+                console.error(itemErr);
+                alert("Error inserting order items.");
+                setProcessing(false);
+                return;
+            }
+        }
+
+        // insert payment
+        const { error: payErr } = await supabase
+            .from("Payment")
+            .insert([
+                {
+                    order_id: orderId,
+                    amt: total,
+                    method: "card",
+                    paid_at: new Date().toISOString(),
+                },
+            ]);
+
+        if (payErr) {
+            console.error(payErr);
+            alert("Payment insert failed (but order was created).");
+        }
+
+        // remove purchased items from Cart_item
+        for (const p of products) {
+            await supabase.from("Cart_item").delete().eq("c_itemid", p.id);
+        }
+
+        // clear session storage
+        sessionStorage.removeItem("checkoutItems");
+
+        alert("Order placed successfully!");
+        setProcessing(false);
+        navigate("/dashboard/customer");
+    };
+
+    const subtotal = products.reduce((sum, p) => sum + p.price * p.quantity, 0);
+    const tax = subtotal * 0.08;
+    const total = subtotal + tax;
 
     return (
         <>

@@ -1,28 +1,53 @@
+import React, { useEffect, useState } from "react";
 import SectionCards from "../components/SectionCards"
+import { supabase } from "../supabaseClient";
 
 export default function PendingOrders() {
+    const [orders, setOrders] = useState([]);
 
-    const buyerPendingOrdersData = [
-        {
-            sellerName: "Sarah Johnson",
-            orderNum: "ORD-1234",
-            status: "Placed",
-            datePlaced: "January 15, 2024",
-        },
-        {
-            sellerName: "Michael Chen",
-            orderNum: "ORD-1235",
-            status: "Packing",
-            datePlaced: "January 14, 2024",
-        },
-        {
-            sellerName: "Emily Davis",
-            orderNum: "ORD-1236",
-            status: "Shipped",
-            datePlaced: "January 13, 2024",
-        },
-    ];
+    useEffect(() => {
+        async function loadPendingOrders() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
 
+            // 1. Get all orders for this customer
+            const { data: orderRows } = await supabase
+                .from("Order")
+                .select("order_num, createdOn")
+                .eq("cust_id", user.id);
+
+            let final = [];
+
+            for (const ord of orderRows) {
+                // 2. Get all suborders (each seller)
+                const { data: subs } = await supabase
+                    .from("Sub_order")
+                    .select("sub_id, seller_id, status")
+                    .eq("order_id", ord.order_num);
+
+                for (const sub of subs) {
+                    // 3. Get seller name
+                    const { data: seller } = await supabase
+                        .from("Users")
+                        .select("Fname, Lname")
+                        .eq("uid", sub.seller_id)
+                        .single();
+
+                    // Build card
+                    final.push({
+                        sellerName: `${seller.Fname} ${seller.Lname}`,
+                        orderNum: ord.order_num,
+                        status: sub.status,
+                        datePlaced: ord.createdOn
+                    });
+                }
+            }
+
+            setOrders(final);
+        }
+
+        loadPendingOrders();
+    }, []);
     return (
         <>
             <SectionCards title="Pending Orders" items={buyerPendingOrdersData} type="orders" mode="buyer" />

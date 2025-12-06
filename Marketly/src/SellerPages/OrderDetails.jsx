@@ -1,183 +1,268 @@
 import Header from "../components/Header";
-import "./orders.css"
-
+import "./orders.css";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { orders } from "./orders";
-
 import { ArrowLeft } from "lucide-react";
-
+import { supabase } from "../supabaseClient";
 
 export default function OrdersDetails({ mode = "seller" }) {
+    const { orderId } = useParams();
+    const navigate = useNavigate();
 
+    const [data, setData] = useState(null);
+    const [currentStatus, setCurrentStatus] = useState("");
+    const [hasChanges, setHasChanges] = useState(false);
+    const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
 
-
-    const { orderId } = useParams()
-    const navigate = useNavigate()
-    const order = orders.find((o) => o.id === Number.parseInt(orderId))
-
-    const [currentStatus, setCurrentStatus] = useState(order?.status || "")
-    const [hasChanges, setHasChanges] = useState(false)
-    const [showUnsavedWarning, setShowUnsavedWarning] = useState(false)
-
-    const nameLabel = mode === "seller" ? "Customer Name" : "Seller Name";
-    const nameValue = mode === "seller" ? order.customerName : order.sellerName;
 
     useEffect(() => {
-        if (order) {
-            setCurrentStatus(order.status)
-        }
-    }, [order])
+        async function fetchDetails() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
 
+            // sellers
+            if (mode === "seller") {
+                // Get this seller's suborder
+                const { data: sub } = await supabase
+                    .from("Sub_order")
+                    .select("sub_id, order_id, status")
+                    .eq("seller_id", user.id)
+                    .eq("order_id", orderId)
+                    .single();
+
+                if (!sub) {
+                    navigate("/seller/orders"); return;
+                }
+
+                // Get main order info
+                const { data: order } = await supabase
+                    .from("Order")
+                    .select("order_num, cust_id, createdOn")
+                    .eq("order_num", sub.order_id)
+                    .single();
+
+                // Get customer name
+                const { data: cust } = await supabase
+                    .from("Users")
+                    .select("Fname, Lname")
+                    .eq("uid", order.cust_id)
+                    .single();
+
+                // get items for THIS seller only
+                const { data: items } = await supabase
+                    .from("Order_item")
+                    .select("quantity, product_id")
+                    .eq("sub_id", sub.sub_id);
+
+                // get product names
+                const detailedItems = [];
+                for (const it of items) {
+                    const { data: p } = await supabase
+                        .from("Products")
+                        .select("pname")
+                        .eq("pid", it.product_id)
+                        .single();
+
+                    detailedItems.push({
+                        name: p.pname,
+                        qty: it.quantity
+                    });
+                }
+
+                const payload = {
+                    mode: "seller",
+                    orderNumber: order.order_num,
+                    customerName: `${cust.Fname} ${cust.Lname}`,
+                    datePlaced: order.createdOn,
+                    products: detailedItems,
+                    status: sub.status,
+                    subId: sub.sub_id
+                };
+
+                setData(payload);
+                setCurrentStatus(sub.status);
+            }
+
+            //  customers
+            else {
+                const { data: order } = await supabase
+                    .from("Order")
+                    .select("order_num, cust_id, createdOn")
+                    .eq("order_num", orderId)
+                    .single();
+
+                const { data: subs } = await supabase
+                    .from("Sub_order")
+                    .select("sub_id, seller_id, status")
+                    .eq("order_id", orderId);
+
+                const sellerBlocks = [];
+
+                for (const s of subs) {
+                    // Get seller name
+                    const { data: seller } = await supabase
+                        .from("Users")
+                        .select("Fname, Lname")
+                        .eq("uid", s.seller_id)
+                        .single();
+
+                    // Get items for this seller
+                    const { data: items } = await supabase
+                        .from("Order_item")
+                        .select("product_id, quantity")
+                        .eq("sub_id", s.sub_id);
+
+                    const detailedItems = [];
+
+                    for (const it of items) {
+                        const { data: p } = await supabase
+                            .from("Products")
+                            .select("pname")
+                            .eq("pid", it.product_id)
+                            .single();
+
+                        detailedItems.push({
+                            name: p.pname,
+                            qty: it.quantity
+                        });
+                    }
+
+                    sellerBlocks.push({
+                        subId: s.sub_id,
+                        sellerName: `${seller.Fname} ${seller.Lname}`,
+                        status: s.status,
+                        products: detailedItems
+                    });
+                }
+
+                const payload = {
+                    mode: "customer",
+                    orderNumber: order.order_num,
+                    datePlaced: order.createdOn,
+                    sellers: sellerBlocks
+                };
+
+                setData(payload);
+            }
+        }
+
+        fetchDetails();
+    }, [orderId, mode]);
+
+    // status change
     useEffect(() => {
-        setHasChanges(currentStatus !== order?.status)
-    }, [currentStatus, order])
-
-    if (!order) {
-        return (
-            <div className="container">
-                <p>Order not found</p>
-                <Link to="/">Back to Orders</Link>
-            </div>
-        )
-    }
-    const handleStatusChange = (e) => {
-        setCurrentStatus(e.target.value)
-    }
-
-    const handleSaveChanges = () => {
-        // Here you would typically send the changes to your backend
-        alert(`Status updated to: ${currentStatus}`)
-        order.status = currentStatus
-        setHasChanges(false)
-    }
-
-    const handleCancelChanges = () => {
-        setCurrentStatus(order.status)
-        setHasChanges(false)
-    }
-
-    const handleBackClick = (e) => {
-        if (hasChanges) {
-            e.preventDefault()
-            setShowUnsavedWarning(true)
+        if (data && mode === "seller") {
+            setHasChanges(currentStatus !== data.status);
         }
-    }
+    }, [currentStatus, data, mode]);
 
-    const confirmLeave = () => {
-        setHasChanges(false)
-        navigate("/")
-    }
+    if (!data) return <p>Loading...</p>;
 
-    const cancelLeave = () => {
-        setShowUnsavedWarning(false)
+    // save status
+    async function handleSaveChanges() {
+        await supabase
+            .from("Sub_order")
+            .update({ status: currentStatus })
+            .eq("sub_id", data.subId);
+
+        alert("Status updated!");
+        setHasChanges(false);
     }
 
     return (
         <>
-            <Header />
-            <div className="page">
+            <Header mode={mode} />
 
+            <div className="page">
                 <div className="page-inner">
 
-                    <Link to={mode === "seller" ? "/seller/orders" : "/customer/orders"} className="back-button" onClick={mode === "seller" ? handleBackClick : undefined}>
+                    <Link to={mode === "seller" ? "/seller/orders" : "/customer/orders"} className="back-button">
                         <ArrowLeft size={20} />
                         Back
                     </Link>
 
                     <h1 className="page-title">Order Information</h1>
-                    <div className="details-card">
-                        <div className="detail-row">
-                            <span className="detail-label">Customer Name</span>
-                            <span className="detail-value">{order.customerName}</span>
-                        </div>
 
+                    <div className="details-card">
+                        {/* SHARED */}
                         <div className="detail-row">
                             <span className="detail-label">Order Number</span>
-                            <span className="detail-value">{order.orderNumber}</span>
+                            <span className="detail-value">{data.orderNumber}</span>
                         </div>
 
                         <div className="detail-row">
                             <span className="detail-label">Date Placed</span>
-                            <span className="detail-value">{order.datePlaced}</span>
+                            <span className="detail-value">{data.datePlaced}</span>
                         </div>
 
-                        <div className="detail-row">
-                            <span className="detail-label">Status</span>
+                        {/* SELLER MODE */}
+                        {mode === "seller" && (
+                            <>
+                                <div className="detail-row">
+                                    <span className="detail-label">Customer Name</span>
+                                    <span className="detail-value">{data.customerName}</span>
+                                </div>
 
-                            {/* <select value={currentStatus} onChange={handleStatusChange} className="status-dropdown">
-                                <option value="Placed">Placed</option>
-                                <option value="Packing">Packing</option>
-                                <option value="Pending Shipment">Pending Shipment</option>
-                                <option value="Shipped">Shipped</option>
-                                <option value="Completed">Completed</option>
-                            </select> */}
-                            {mode === "seller" ? (
-                                <select
-                                    value={currentStatus}
-                                    onChange={handleStatusChange}
-                                    className="status-dropdown"
-                                >
-                                    <option value="Placed">Placed</option>
-                                    <option value="Packing">Packing</option>
-                                    <option value="Pending Shipment">Pending Shipment</option>
-                                    <option value="Shipped">Shipped</option>
-                                    <option value="Completed">Completed</option>
-                                </select>
-                            ) : (
-                                <span className={`order-value status-bdg status-${order.status.toLowerCase().replace(" ", "-")}`}>
-                                    {order.status}
-                                </span>
-                            )}
-                        </div>
+                                <div className="detail-row">
+                                    <span className="detail-label">Status</span>
+                                    <select
+                                        value={currentStatus}
+                                        onChange={(e) => setCurrentStatus(e.target.value)}
+                                        className="status-dropdown"
+                                    >
+                                        <option value="Placed">Placed</option>
+                                        <option value="Packing">Packing</option>
+                                        <option value="Pending Shipment">Pending Shipment</option>
+                                        <option value="Shipped">Shipped</option>
+                                        <option value="Completed">Completed</option>
+                                    </select>
+                                </div>
 
-                        <div className="products-section">
-                            <h2 className="section-title">Product(s) Ordered</h2>
-                            <div className="products-list">
-                                {order.products.map((product, index) => (
-                                    <div key={index} className="product-item">
-                                        <img src={product.img || "/placeholder.svg"} alt={product.name} className="product-image" />
-                                        <div className="product-info">
-                                            <p className="product-name">{product.name}</p>
-                                            <p className="product-quantity">Quantity: {product.qty}</p>
+                                <h2 className="section-title">Products (Your Portion)</h2>
+                                <div className="products-list">
+                                    {data.products.map((p, idx) => (
+                                        <div key={idx} className="product-item">
+                                            <p className="product-name">{p.name}</p>
+                                            <p className="product-quantity">Qty: {p.qty}</p>
                                         </div>
+                                    ))}
+                                </div>
+
+                                {hasChanges && (
+                                    <div className="action-buttons">
+                                        <button onClick={handleSaveChanges} className="btn btn-save">
+                                            Save Changes
+                                        </button>
+                                        <button onClick={() => setCurrentStatus(data.status)} className="btn btn-cancel">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* CUSTOMER MODE */}
+                        {mode === "customer" && (
+                            <>
+                                <h2 className="section-title">Seller Breakdown</h2>
+                                {data.sellers.map((s, idx) => (
+                                    <div key={idx} className="seller-block">
+                                        <h3 className="seller-name">{s.sellerName}</h3>
+                                        <p className="seller-status">Status: {s.status}</p>
+
+                                        {s.products.map((p, j) => (
+                                            <div key={j} className="product-item">
+                                                <p className="product-name">{p.name}</p>
+                                                <p className="product-quantity">Qty: {p.qty}</p>
+                                            </div>
+                                        ))}
                                     </div>
                                 ))}
-                            </div>
-                        </div>
-
-                        {mode === "seller" && hasChanges && (
-                            <div className="action-buttons">
-                                <button onClick={handleSaveChanges} className="btn btn-save">
-                                    Save Changes
-                                </button>
-                                <button onClick={handleCancelChanges} className="btn btn-cancel">
-                                    Cancel Changes
-                                </button>
-                            </div>
+                            </>
                         )}
                     </div>
                 </div>
-
-                {mode === "seller" && showUnsavedWarning && (
-                    <div className="modal-overlay">
-                        <div className="modal">
-                            <h3 className="modal-title">Unsaved Changes</h3>
-                            <p className="modal-message">You have unsaved changes. Are you sure you want to leave this page?</p>
-                            <div className="modal-buttons">
-                                <button onClick={confirmLeave} className="btn btn-confirm">
-                                    Leave Page
-                                </button>
-                                <button onClick={cancelLeave} className="btn btn-stay">
-                                    Stay on Page
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
             </div>
         </>
-    )
-
+    );
 }

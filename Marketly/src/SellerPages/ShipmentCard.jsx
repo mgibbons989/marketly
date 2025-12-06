@@ -7,7 +7,7 @@ export default function ShipmentCard({ shipment, onOpen, mode = "seller" }) {
             <div key={shipment.id} className="shipment-card">
                 <div className="card-content">
                     <div className="card-field">
-                        <span className="field-label">Customer Name:</span>
+                        <span className="field-label">{mode === "seller" ? "Customer Name:" : "Seller Name:"}</span>
                         <span className="field-value">{shipment.customerName}</span>
                     </div>
                     <div className="card-field">

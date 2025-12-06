@@ -1,4 +1,3 @@
-import "./notifications.css"
 
 export default function NotificationsDropdown({ notifications }) {
     return (
