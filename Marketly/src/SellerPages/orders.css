@@ -286,13 +286,13 @@
     margin-bottom: 1.5rem;
 }
 
-.products-list {
+.order-products-list {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
-.product-item {
+.order-product-item {
     display: flex;
     gap: 1.5rem;
     align-items: center;
@@ -302,7 +302,7 @@
     border-radius: 8px;
 }
 
-.product-image {
+.order-product-image {
     width: 80px;
     height: 80px;
     object-fit: cover;
@@ -310,17 +310,17 @@
     background-color: #e5e7eb;
 }
 
-.product-info {
+.order-product-info {
     flex: 1;
 }
 
-.product-name {
+.order-product-name {
     font-weight: 600;
     color: #111;
     margin-bottom: 0.25rem;
 }
 
-.product-quantity {
+.order-product-quantity {
     color: #666;
     font-size: 1rem;
 }

@@ -159,6 +159,13 @@
     margin: 0;
 }
 
+.product-price {
+    font-weight: 400;
+    color: #333;
+    font-size: 1.25rem;
+    margin: .3rem 0
+}
+
 /* Modal Styles */
 .modal-overlay {
     position: fixed;
@@ -302,4 +309,13 @@
     .modal-button {
         flex: 1;
     }
+}
+
+.edit-preview-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
 }

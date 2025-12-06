@@ -17,24 +17,25 @@ export default function Catalog() {
         async function loadProducts() {
             let { data: productsData } = await supabase
                 .from("Products")
-                .select("pid, pname, price, stock, image, seller_id");
+                .select(`id, pname, price, stock, image, seller_id, 
+                    Seller: seller_id ( business_name )`);
 
             // get all sellers 
-            let { data: sellersData } = await supabase
-                .from("Users")
-                .select("uid, Fname, Lname");
+            // let { data: sellersData } = await supabase
+            //     .from("Seller")
+            //     .select("uid, business_name");
 
-            const sellerMap = {};
-            sellersData.forEach((s) => {
-                sellerMap[s.uid] = `${s.Fname} ${s.Lname}`;
-            });
+            // const sellerMap = {};
+            // sellersData.forEach((s) => {
+            //     sellerMap[s.uid] = `${s.business_name}`;
+            // });
 
             const formatted = productsData.map((p) => ({
-                id: p.pid,
+                id: p.id,
                 name: p.pname,
                 price: p.price,
                 stock: p.stock,
-                sellerName: sellerMap[p.seller_id] || "Unknown Seller",
+                sellerName: p.Seller?.business_name || "Unknown Seller",
                 image: p.image || "/placeholder.svg",
                 seller_id: p.seller_id,
             }));
@@ -160,7 +161,7 @@ export default function Catalog() {
                                 <img src={product.image || "/placeholder.svg"} alt={product.name} className="cat-product-image" />
                                 <div className="cat-product-info">
                                     <h3 className="cat-product-name">{product.name}</h3>
-                                    <p className="cat-product-seller">{product.seller}</p>
+                                    <p className="cat-product-seller">{product.sellerName}</p>
                                     <p className="cat-product-price">${product.price.toFixed(2)}</p>
                                 </div>
                             </div>
@@ -185,7 +186,7 @@ export default function Catalog() {
 
                             <div className="modal-info">
                                 <h2 className="modal-product-name">{selectedProduct.name}</h2>
-                                <p className="modal-seller">{selectedProduct.seller}</p>
+                                <p className="modal-seller">{selectedProduct.sellerName}</p>
                                 <p className="modal-price">${selectedProduct.price.toFixed(2)}</p>
 
                                 <div className="quantity-section">

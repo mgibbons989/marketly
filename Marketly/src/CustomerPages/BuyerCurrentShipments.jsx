@@ -51,7 +51,7 @@ export default function CurrentShipments() {
     }, []);
     return (
         <>
-            <SectionCards title="Current Shipments" items={buyerShipmentsData} type="shipments" mode="buyer" />
+            <SectionCards title="Current Shipments" items={shipments} type="shipments" mode="buyer" />
         </>
     );
 }

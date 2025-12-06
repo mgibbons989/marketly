@@ -24,7 +24,13 @@ export default function SectionCards({ title, items, type, mode = "seller" }) {
                             {/* Product Alerts Image */}
                             {type === "product" && (
                                 <>
-                                    <div className="product-img"></div>
+                                    <div className="product-img">
+                                        <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="card-product-image"
+                                        />
+                                    </div>
 
                                     <div>
                                         <div className="card-label">

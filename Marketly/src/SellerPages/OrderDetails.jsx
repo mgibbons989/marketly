@@ -60,7 +60,7 @@ export default function OrdersDetails({ mode = "seller" }) {
                     const { data: p } = await supabase
                         .from("Products")
                         .select("pname")
-                        .eq("pid", it.product_id)
+                        .eq("id", it.product_id)
                         .single();
 
                     detailedItems.push({
@@ -118,7 +118,7 @@ export default function OrdersDetails({ mode = "seller" }) {
                         const { data: p } = await supabase
                             .from("Products")
                             .select("pname")
-                            .eq("pid", it.product_id)
+                            .eq("id", it.product_id)
                             .single();
 
                         detailedItems.push({
@@ -219,11 +219,11 @@ export default function OrdersDetails({ mode = "seller" }) {
                                 </div>
 
                                 <h2 className="section-title">Products (Your Portion)</h2>
-                                <div className="products-list">
+                                <div className="order-products-list">
                                     {data.products.map((p, idx) => (
-                                        <div key={idx} className="product-item">
-                                            <p className="product-name">{p.name}</p>
-                                            <p className="product-quantity">Qty: {p.qty}</p>
+                                        <div key={idx} className="order-product-item">
+                                            <p className="order-product-name">{p.name}</p>
+                                            <p className="order-product-quantity">Qty: {p.qty}</p>
                                         </div>
                                     ))}
                                 </div>

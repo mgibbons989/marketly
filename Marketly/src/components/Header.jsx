@@ -4,9 +4,20 @@ import NotificationsDropdown from "./NotificationsDropdown"
 import "../styles.css"
 import { useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 
 function Header({ mode = "seller" }) {
+    const navigate = useNavigate()
+    async function handleLogout() {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error("Logout error:", error);
+            return;
+        }
+        navigate('/');
+    }
+
     const location = useLocation();
     const isLandingPage = location.pathname === "/";
     const isSignupPage = location.pathname === "/signup";
@@ -85,14 +96,18 @@ function Header({ mode = "seller" }) {
                 return;
             }
 
-            const { data: cust } = await supabase
+            const { data } = await supabase
                 .from("Customer")
-                .select("Fname, Lname")
+                .select(`
+                    uid,
+                    Users:uid ( Fname, Lname )
+                `)
                 .eq("uid", user.id)
                 .maybeSingle();
 
-            if (cust) {
-                profileName = `${cust.Fname} ${cust.Lname}`;
+
+            if (data?.Users) {
+                profileName = `${data.Users.Fname} ${data.Users.Lname}`;
                 setUserName(profileName);
                 return;
             }
@@ -105,19 +120,27 @@ function Header({ mode = "seller" }) {
     const navLinks = [
         {
             name: "Dashboard",
-            path: mode === "seller" ? "/dashboard/seller" : "/dashboard/customer"
+            path: mode === "seller" ? "/dashboard/seller" : "/dashboard/customer",
+            type: "link"
         },
         {
             name: "Orders",
-            path: mode === "seller" ? "/seller/orders" : "/customer/orders"
+            path: mode === "seller" ? "/seller/orders" : "/customer/orders",
+            type: "link"
         },
         {
             name: "Shipments",
-            path: mode === "seller" ? "/seller/shipments" : "/customer/shipments"
+            path: mode === "seller" ? "/seller/shipments" : "/customer/shipments",
+            type: "link"
         },
         {
             name: mode === "seller" ? "Product List" : "Product Catalog",
-            path: mode === "seller" ? "/seller/product-list" : "/customer/catalog"
+            path: mode === "seller" ? "/seller/product-list" : "/customer/catalog",
+            type: "link"
+        },
+        {
+            name: "Logout",
+            type: "logout"  // special type
         }
     ];
 
@@ -227,14 +250,20 @@ function Header({ mode = "seller" }) {
                     <ul>
                         {navLinks.map(link => (
                             <li key={link.name}>
-                                <a
-                                    href={link.path}
-                                    className={
-                                        location.pathname === link.path ? "active" : ""
-                                    }
-                                >
-                                    {link.name}
-                                </a>
+                                {link.type === "logout" ? (
+                                    <button className="logout-link" onClick={handleLogout}>{link.name}</button>
+                                ) :
+                                    (
+                                        <a
+                                            href={link.path}
+                                            className={
+                                                location.pathname === link.path ? "active" : ""
+                                            }
+                                        >
+                                            {link.name}
+                                        </a>
+                                    )}
+
                             </li>
                         ))}
                     </ul>

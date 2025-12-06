@@ -10,7 +10,7 @@ export default function PendingOrders() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            // 1. Get all orders for this customer
+            // Get all orders for this customer
             const { data: orderRows } = await supabase
                 .from("Order")
                 .select("order_num, createdOn")
@@ -19,14 +19,14 @@ export default function PendingOrders() {
             let final = [];
 
             for (const ord of orderRows) {
-                // 2. Get all suborders (each seller)
+                // Get all suborders (each seller)
                 const { data: subs } = await supabase
                     .from("Sub_order")
                     .select("sub_id, seller_id, status")
                     .eq("order_id", ord.order_num);
 
                 for (const sub of subs) {
-                    // 3. Get seller name
+                    //Get seller name
                     const { data: seller } = await supabase
                         .from("Users")
                         .select("Fname, Lname")
@@ -50,7 +50,7 @@ export default function PendingOrders() {
     }, []);
     return (
         <>
-            <SectionCards title="Pending Orders" items={buyerPendingOrdersData} type="orders" mode="buyer" />
+            <SectionCards title="Pending Orders" items={orders} type="orders" mode="buyer" />
         </>
     );
 }

@@ -169,7 +169,7 @@ export default function Cart() {
                                     </button>
                                 </div>
 
-                                <div className="product-price">${(product.price * product.quantity).toFixed(2)}</div>
+                                <div className="cart-product-price">${(product.price * product.quantity).toFixed(2)}</div>
 
                                 <button className="remove-button" onClick={() => handleRemove(product.id)}>
                                     Remove

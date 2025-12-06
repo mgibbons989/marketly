@@ -25,7 +25,7 @@
     color: #333;
 }
 
-.products-container {
+.cart-products-container {
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -98,7 +98,7 @@
     font-size: 16px;
 }
 
-.product-price {
+.cart-product-price {
     font-size: 18px;
     font-weight: bold;
     color: #333;

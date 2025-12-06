@@ -36,7 +36,7 @@ export default function ProductAlerts() {
                 const { data: product } = await supabase
                     .from("Products")
                     .select("pname, stock, image")
-                    .eq("pid", item.product_id)
+                    .eq("id", item.product_id)
                     .single();
 
                 if (!product) continue;
@@ -59,7 +59,7 @@ export default function ProductAlerts() {
 
     return (
         <>
-            <SectionCards title="Low Stock in Cart" items={buyerProductsData} type="product" mode="buyer" />
+            <SectionCards title="Low Stock in Cart" items={alerts} type="product" mode="buyer" />
         </>
     );
 

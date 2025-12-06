@@ -12,7 +12,7 @@ export default function ProductAlerts() {
 
             const { data, error } = await supabase
                 .from("Products")
-                .select("id, pname, stock")
+                .select("id, pname, stock, image")
                 .eq("seller_id", user.id);
 
             if (error) {
@@ -25,6 +25,7 @@ export default function ProductAlerts() {
             const formatted = rows.map(p => ({
                 name: p.pname,
                 qty: p.stock,
+                image: p.image
             }));
 
             setProducts(formatted);

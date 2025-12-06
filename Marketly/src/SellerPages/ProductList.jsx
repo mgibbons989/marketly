@@ -17,6 +17,7 @@ export default function ProductList() {
         name: '',
         quantity: '',
         image: '',
+        price: ''
     })
 
     const [editForm, setEditForm] = useState({
@@ -24,6 +25,7 @@ export default function ProductList() {
         name: '',
         quantity: '',
         image: '',
+        price: ''
     })
 
     // Filter products by partial name (case-insensitive)
@@ -37,7 +39,7 @@ export default function ProductList() {
 
     // ---------- Add Product Modal ----------
     const openAddModal = () => {
-        setAddForm({ name: '', quantity: '', image: '' })
+        setAddForm({ name: '', quantity: '', image: '', price: '' })
         setIsAddModalOpen(true)
     }
 
@@ -55,12 +57,36 @@ export default function ProductList() {
 
         const { data: { user } } = await supabase.auth.getUser();
 
+        if (!addForm.image) {
+            alert("Please select an image.");
+            return;
+        }
+
+        const file = addForm.image;
+        const filePath = `products/${user.id}-${Date.now()}-${file.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("product-images")
+            .upload(filePath, file);
+
+        if (uploadError) {
+            console.error("Upload error:", uploadError);
+            alert("Failed to upload image.");
+            return;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+            .from("product-images")
+            .getPublicUrl(filePath);
+
+        const imageUrl = publicUrlData.publicUrl;
+
         const { data, error } = await supabase
             .from("Products")
             .insert({
                 pname: addForm.name,
                 stock: Number(addForm.quantity),
-                image: addForm.image,
+                image: imageUrl,
+                price: addForm.price,
                 seller_id: user.id
             })
             .select()
@@ -72,10 +98,11 @@ export default function ProductList() {
         }
 
         setProducts(prev => [...prev, {
-            id: data.pid,
+            id: data.id,
             name: data.pname,
             quantity: data.stock,
-            image: data.image
+            image: data.image,
+            price: data.price
         }]);
 
         setIsAddModalOpen(false);
@@ -88,6 +115,7 @@ export default function ProductList() {
             name: product.name,
             quantity: product.quantity,
             image: product.image,
+            price: product.price
         })
         setIsEditModalOpen(true)
     }
@@ -103,15 +131,40 @@ export default function ProductList() {
 
     const handleEditConfirm = async (e) => {
         e.preventDefault();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        let imageUrl = editForm.image;
+
+        if (editForm.image instanceof File) {
+            const file = editForm.image;
+            const filePath = `products/${user.id}-${Date.now()}-${file.name}`;
+
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from("product-images")
+                .upload(filePath, file);
+
+            if (uploadError) {
+                console.error("Image upload failed:", uploadError);
+                alert("Failed to upload new image.");
+                return;
+            }
+
+            const { data: publicUrlData } = supabase.storage
+                .from("product-images")
+                .getPublicUrl(filePath);
+
+            imageUrl = publicUrlData.publicUrl;
+        }
 
         const { error } = await supabase
             .from("Products")
             .update({
                 pname: editForm.name,
                 stock: Number(editForm.quantity),
-                image: editForm.image
+                image: imageUrl,
+                price: editForm.price
             })
-            .eq("pid", editForm.id);
+            .eq("id", editForm.id);
 
         if (error) {
             alert("Failed to update product.");
@@ -121,7 +174,13 @@ export default function ProductList() {
         setProducts((prev) =>
             prev.map((p) =>
                 p.id === editForm.id
-                    ? { ...p, name: editForm.name, quantity: Number(editForm.quantity), image: editForm.image }
+                    ? {
+                        ...p,
+                        name: editForm.name,
+                        quantity: Number(editForm.quantity),
+                        image: imageUrl,
+                        price: editForm.price
+                    }
                     : p
             )
         );
@@ -136,7 +195,7 @@ export default function ProductList() {
         const { error } = await supabase
             .from("Products")
             .delete()
-            .eq("pid", editForm.id);
+            .eq("id", editForm.id);
 
         if (error) {
             alert("Could not delete product.");
@@ -156,7 +215,7 @@ export default function ProductList() {
 
             const { data, error } = await supabase
                 .from("Products")
-                .select("id, pname, stock, image")
+                .select("id, pname, stock, image, price")
                 .eq("seller_id", user.id);
 
             if (error) {
@@ -169,7 +228,8 @@ export default function ProductList() {
                 id: p.id,
                 name: p.pname,
                 quantity: p.stock,
-                image: p.image || ""
+                image: p.image || "",
+                price: p.price
             }));
 
             setProducts(mapped);
@@ -240,9 +300,15 @@ export default function ProductList() {
                                                 className="product-image"
                                             />
                                         </div>
+                                        <p className="product-price">
+                                            Price: ${product.price.toFixed(2)}
+                                        </p>
+
                                         <p className="product-quantity">
                                             Quantity: {product.quantity}
                                         </p>
+
+
                                     </div>
                                 ))
                             )}
@@ -270,20 +336,20 @@ export default function ProductList() {
                                 >
                                     <div className="form-group">
                                         <label className="form-label">
-                                            <span>Item Image (URL)</span>
-
+                                            <span>Item Image</span>
                                         </label>
 
                                         <input
                                             name="image"
                                             className="form-input"
-                                            type="text"
-                                            value={addForm.image}
-                                            onChange={handleAddChange}
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => setAddForm(prev => ({ ...prev, image: e.target.files[0] }))}
                                             placeholder="https://..."
                                             required
                                         />
                                     </div>
+
                                     <div className="form-group">
                                         <label className="form-label">
                                             Item Name
@@ -310,6 +376,22 @@ export default function ProductList() {
                                             type="number"
                                             min="0"
                                             value={addForm.quantity}
+                                            onChange={handleAddChange}
+                                            required
+                                        />
+
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">
+                                            Item Price
+                                        </label>
+                                        <input
+                                            className="form-input"
+                                            name="price"
+                                            type="number"
+                                            min="0"
+                                            step=".01"
+                                            value={addForm.price}
                                             onChange={handleAddChange}
                                             required
                                         />
@@ -356,15 +438,22 @@ export default function ProductList() {
                                     onSubmit={handleEditConfirm}
                                 >
                                     <div className="form-group">
+                                        <img
+                                            src={editForm.image instanceof File ? URL.createObjectURL(editForm.image) : editForm.image}
+                                            alt="Current product"
+                                            className="edit-preview-image"
+                                        />
+
                                         <label className="form-label">
                                             Item Image (URL)
                                         </label>
                                         <input
                                             className="form-input"
                                             name="image"
-                                            type="text"
-                                            value={editForm.image}
-                                            onChange={handleEditChange} />
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) =>
+                                                setEditForm(prev => ({ ...prev, image: e.target.files[0] }))} />
 
                                     </div>
 
@@ -395,6 +484,22 @@ export default function ProductList() {
                                             onChange={handleEditChange} />
 
                                     </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label">
+                                            Item Price
+                                        </label>
+                                        <input
+                                            className="form-input"
+                                            name="price"
+                                            type="number"
+                                            min="0"
+                                            step=".01"
+                                            value={editForm.price}
+                                            onChange={handleEditChange} />
+
+                                    </div>
+
 
 
                                     <div className="modal-buttons-edit">
