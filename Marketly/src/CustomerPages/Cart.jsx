@@ -43,19 +43,8 @@ export default function Cart() {
         return saved ? JSON.parse(saved) : initialProducts;
     });
 
-    // useEffect(() => {
-    //     if (typeof window !== "undefined") {
-    //         sessionStorage.setItem("cartProducts", JSON.stringify(products))
-    //     }
-    // }, [products])
-
     const handleBack = () => {
         navigate(-1)
-        // if (location.state?.from) {
-        //     navigate(location.state.from);
-        // } else {
-        //     navigate('/dashboard/customer', { replace: true });
-        // }
     }
 
     const handleCheckbox = (id) => {

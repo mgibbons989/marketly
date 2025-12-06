@@ -35,33 +35,24 @@ export default function SectionCards({ title, items, type, mode = "seller" }) {
                                     </div>
                                 )}
 
-                                {/* If seller: qty === 0 means out of inventory */}
                                 {mode === "seller" && item.qty === 0 && (
                                     <div className="stock-alert">
                                         <AlertCircle size={16} /> Out of Stock
                                     </div>
                                 )}
 
-                                {/* {item.qty === 0 && (
-                                    <div className="stock-alert">
-                                        <AlertCircle size={16} /> Out of Stock
-                                    </div>
-                                )} */}
 
                             </>
                         )}
 
-                        {/* Pending Orders */}
                         {type === "orders" && (
                             <>
                                 <div>
                                     <div className="card-label">
-                                        {/* Customer Name */}
                                         {mode === "seller" ? "Customer Name" : "Seller Name"}
                                     </div>
 
                                     <div className="card-value">
-                                        {/* {item.customerName} */}
                                         {mode === "seller"
                                             ? item.customerName
                                             : item.sellerName}
