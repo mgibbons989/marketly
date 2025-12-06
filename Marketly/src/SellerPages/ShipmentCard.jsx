@@ -1,7 +1,7 @@
 import React from "react";
 
 
-export default function ShipmentCard({ shipment, onOpen }) {
+export default function ShipmentCard({ shipment, onOpen, mode = "seller" }) {
     return (
         <>
             <div key={shipment.id} className="shipment-card">
@@ -28,7 +28,7 @@ export default function ShipmentCard({ shipment, onOpen }) {
                     </div>
                 </div>
                 <button className="expand-button" onClick={() => onOpen(shipment)}>
-                    Click to expand or edit
+                    {mode === "seller" ? "Click to expand or edit" : "View Shipment Details"}
                 </button>
             </div>
         </>

@@ -57,7 +57,7 @@ const availableOrders = [
     },
 ]
 
-export default function Shipments() {
+export default function Shipments({ mode = "seller" }) {
     const [shipments, setShipments] = useState(initialShipments)
     const [searchQuery, setSearchQuery] = useState("")
     const [filterStatus, setFilterStatus] = useState("All")
@@ -182,7 +182,7 @@ export default function Shipments() {
 
     return (
         <>
-            <Header />
+            <Header mode={mode} />
             <div className="page">
                 <div className="page-inner">
                     {/* Search Bar */}
@@ -203,10 +203,11 @@ export default function Shipments() {
                     <div className="header-row">
                         <h1 className="title">Shipments</h1>
                         <div className="actions">
-                            <button className="add-button" onClick={handleAddShipment}>
+                            {mode === "seller" && (<button className="add-button" onClick={handleAddShipment}>
                                 <Plus size={20} />
                                 Add Shipment
-                            </button>
+                            </button>)}
+
                             <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
                                 <option>All</option>
                                 <option>In Progress</option>
@@ -218,11 +219,11 @@ export default function Shipments() {
                     {/* Shipment Cards */}
                     <div className="cards-grid">
                         {filteredShipments.map((shipment) => (
-                            <ShipmentCard key={shipment.id} shipment={shipment} onOpen={() => handleExpandEdit(shipment)} />
+                            <ShipmentCard key={shipment.id} shipment={shipment} onOpen={() => handleExpandEdit(shipment)} mode={mode} />
                         ))}
                     </div>
 
-                    {showAddModal && (
+                    {showAddModal && mode === "seller" && (
                         <div className="modal-overlay" onClick={handleAddModalBackdropClick}>
                             <div className="ship-modal">
                                 <div className="ship-modal-header">
@@ -327,7 +328,7 @@ export default function Shipments() {
                     )}
 
                     {/* Edit Modal */}
-                    {selectedShipment && (
+                    {selectedShipment && mode === "seller" && (
                         <div className="modal-overlay" onClick={handleBackdropClick}>
                             <div className="ship-modal">
                                 <div className="ship-modal-header">
@@ -411,6 +412,47 @@ export default function Shipments() {
                                     </button>
                                     <button className="save-button" onClick={handleSaveChanges}>
                                         Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedShipment && mode === "buyer" && (
+                        <div className="modal-overlay" onClick={handleBackdropClick}>
+                            <div className="ship-modal">
+                                <div className="ship-modal-header">
+                                    <h2>Shipment Details</h2>
+                                    <button className="close-button" onClick={handleCancel}>
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                <div className="ship-modal-content">
+                                    <div className="modal-field">
+                                        <label>Carrier</label>
+                                        <input type="text" value={selectedShipment.carrier} readOnly className="readonly-input" />
+                                    </div>
+
+                                    <div className="modal-field">
+                                        <label>Tracking Number</label>
+                                        <input type="text" value={selectedShipment.trackingNumber} readOnly className="readonly-input" />
+                                    </div>
+
+                                    <div className="modal-field">
+                                        <label>Status</label>
+                                        <input type="text" value={selectedShipment.status} readOnly className="readonly-input" />
+                                    </div>
+
+                                    <div className="modal-field">
+                                        <label>Shipping Address</label>
+                                        <input type="text" value={selectedShipment.address} readOnly className="readonly-input" />
+                                    </div>
+                                </div>
+
+                                <div className="modal-actions">
+                                    <button className="cancel-button" onClick={handleCancel}>
+                                        Close
                                     </button>
                                 </div>
                             </div>

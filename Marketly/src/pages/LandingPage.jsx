@@ -28,7 +28,7 @@ export default function LandingPage() {
 
                     {/* Login Card */}
                     <div className="landing-card">
-                        <h3 className="card-title">Log In or Sign Up</h3>
+                        <h3 className="card-title">Log In Here!</h3>
 
                         {/* Tabs */}
                         <div className="tab-row">

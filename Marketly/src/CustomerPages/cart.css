@@ -32,7 +32,7 @@
     margin-bottom: 30px;
 }
 
-.product-card {
+.cart-product-card {
     background: white;
     border-radius: 8px;
     padding: 20px;
@@ -42,31 +42,31 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.product-checkbox {
+.cart-product-checkbox {
     width: 20px;
     height: 20px;
     cursor: pointer;
 }
 
-.product-image {
+.cart-product-image {
     width: 80px;
     height: 80px;
     object-fit: cover;
     border-radius: 4px;
 }
 
-.product-info {
+.cart-product-info {
     flex: 1;
     min-width: 150px;
 }
 
-.product-name {
+.cart-product-name {
     font-size: 18px;
     color: #333;
     margin-bottom: 5px;
 }
 
-.product-seller {
+.cart-product-seller {
     font-size: 14px;
     color: #666;
 }

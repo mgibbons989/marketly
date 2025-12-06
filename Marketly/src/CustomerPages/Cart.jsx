@@ -50,26 +50,14 @@ export default function Cart() {
     // }, [products])
 
     const handleBack = () => {
-        // navigate(-1)
-        if (location.state?.from) {
-            navigate(location.state.from);
-        } else {
-            // Fallback to a default route if no reliable previous app history is available
-            navigate('/dashboard/customer', { replace: true });
-        }
+        navigate(-1)
+        // if (location.state?.from) {
+        //     navigate(location.state.from);
+        // } else {
+        //     navigate('/dashboard/customer', { replace: true });
+        // }
     }
 
-    // const handleCheckbox = (id) => {
-    //     setProducts(prev =>
-    //         prev
-    //             .map(p =>
-    //                 p.id === id ? { ...p, checked: !p.checked } : p
-    //             )
-    //             .filter(p =>
-    //                 p.id === id ? !p.checked : true
-    //             )
-    //     );
-    // };
     const handleCheckbox = (id) => {
         setProducts((prev) =>
             prev.map((p) =>
@@ -81,9 +69,6 @@ export default function Cart() {
         setProducts(products.map((p) => (p.id === id ? { ...p, quantity: Math.max(1, p.quantity + delta) } : p)))
     }
 
-    // const handleRemove = (id) => {
-    //     setProducts(products.filter((p) => p.id !== id))
-    // }
     const handleRemove = (id) => {
         setProducts((prev) => {
             const updated = prev.filter((p) => p.id !== id);
@@ -105,18 +90,6 @@ export default function Cart() {
         (sum, p) => sum + p.price * p.quantity,
         0
     )
-
-    // const handleCheckout = () => {
-    //     if (checkedProducts.length === 0) {
-    //         alert("Please select at least one item to checkout")
-    //         return
-    //     }
-
-    //     const confirmCheckout = window.confirm("Are you sure you want to check out now?")
-    //     if (confirmCheckout) {
-    //         navigate("/customer/checkout");
-    //     }
-    // }
     const handleCheckout = () => {
         const checkedProducts = products.filter(p => p.checked);
 
@@ -145,21 +118,21 @@ export default function Cart() {
 
                     <h1 className="page-title">Cart</h1>
 
-                    <div className="products-container">
+                    <div className="cart-products-container">
                         {products.map((product) => (
-                            <div key={product.id} className="product-card">
+                            <div key={product.id} className="cart-product-card">
                                 <input
                                     type="checkbox"
-                                    className="product-checkbox"
+                                    className="cart-product-checkbox"
                                     checked={product.checked}
                                     onChange={() => handleCheckbox(product.id)}
                                 />
 
-                                <img src={product.image || "/placeholder.svg"} alt={product.name} className="product-image" />
+                                <img src={product.image || "/placeholder.svg"} alt={product.name} className="cart-product-image" />
 
-                                <div className="product-info">
-                                    <h3 className="product-name">{product.name}</h3>
-                                    <p className="product-seller">{product.seller}</p>
+                                <div className="cart-product-info">
+                                    <h3 className="cart-product-name">{product.name}</h3>
+                                    <p className="cart-product-seller">{product.seller}</p>
                                 </div>
 
                                 <div className="quantity-controls">

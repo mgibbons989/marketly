@@ -44,7 +44,7 @@ export default function Orders({ mode = "seller" }) {
 
     return (
         <>
-            <Header mode="buyer" />
+            <Header mode={mode} />
             <div className="page">
                 <div className="page-inner">
 

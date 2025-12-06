@@ -1,0 +1,211 @@
+.signup-title {
+    /* font-size: 48px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    line-height: 1.2; */
+    font-size: 48px;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.signup-subtext {
+    font-size: 20px;
+    color: #475569;
+    max-width: 600px;
+    line-height: 1.6;
+    display: flex;
+    /* align-items: left; */
+}
+
+/* .signup-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background-color: #f9fafb;
+} */
+
+.signup-card {
+    /* background: white;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px; */
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+/* .card-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 30px 0;
+    text-align: center;
+    color: #1f2937;
+} */
+
+/* .tab-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+} */
+
+/* .tab-btn {
+    flex: 1;
+    padding: 12px 24px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #6b7280;
+} */
+
+/* .tab-btn:hover {
+    border-color: #d1d5db;
+} */
+
+/* .tab.active.customer {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.tab.active.seller {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+} */
+
+/* .signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+} */
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+
+.sign-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.sign-form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.sign-form-group input {
+    padding: 12px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.sign-form-group input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sign-form-group input.error {
+    border-color: #ef4444;
+}
+
+.sign-form-group input.error:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.login-text {
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: 20px;
+    color: #64748b;
+}
+
+.login-link {
+    text-decoration: underline;
+    font-weight: 550;
+}
+
+.error-message {
+    font-size: 13px;
+    color: #ef4444;
+    margin-top: -2px;
+}
+
+.register-button {
+    margin-top: 10px;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.register-button.customer {
+    background: #3b82f6;
+}
+
+.register-button.customer:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.register-button.seller {
+    background: #10b981;
+}
+
+.register-button.seller:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.register-button:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .signup-container {
+        flex-direction: column;
+    }
+
+    .signup-left {
+        padding: 40px 30px;
+        min-height: 200px;
+    }
+
+    .signup-title {
+        font-size: 32px;
+    }
+
+    .signup-subtext {
+        font-size: 16px;
+    }
+
+    .sign-form-row {
+        flex-direction: column;
+        gap: 20px;
+    }
+}

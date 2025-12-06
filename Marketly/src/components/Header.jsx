@@ -62,105 +62,145 @@ function Header({ mode = "seller" }) {
         return () => document.removeEventListener("mousedown", handleClick)
     }, [])
 
+    const navLinks = [
+        {
+            name: "Dashboard",
+            path: mode === "seller" ? "/dashboard/seller" : "/dashboard/customer"
+        },
+        {
+            name: "Orders",
+            path: mode === "seller" ? "/seller/orders" : "/customer/orders"
+        },
+        {
+            name: "Shipments",
+            path: mode === "seller" ? "/seller/shipments" : "/customer/shipments"
+        },
+        {
+            name: mode === "seller" ? "Product List" : "Product Catalog",
+            path: mode === "seller" ? "/seller/product-list" : "/customer/catalog"
+        }
+    ];
+
     return (
         <header className="header">
             <div className="header-container">
                 <h1 className="logo">Marketly</h1>
 
-                {!isLandingPage && (<div className="header-right">
-                    {/* Profile */}
-                    <div className="profile">
-                        <div className="profile-pic"></div>
-                        <span className="profile-name">{mode === "seller" ? "Seller Name" : "Buyer Name"}</span>
-                    </div>
+                {!isLandingPage && (
+                    <div className="header-right">
+                        {/* Profile */}
+                        <div className="profile">
+                            <div className="profile-pic"></div>
+                            <span className="profile-name">{mode === "seller" ? "Seller Name" : "Buyer Name"}</span>
+                        </div>
 
-                    {/* Notifications */}
-                    <div className="notification-wrapper">
-                        <button className="bell-button"
-                            ref={bellRef}
-                            onClick={() => {
-                                setOpenNotif(!openNotif)
-                                setOpenCart(false)
-                            }}>
-
-                            <Bell className="bell-icon" size={24} />
-                            {notificationCount > 0 && <span className="notif-count"> {notificationCount} </span>}
-                        </button>
-
-                        {openNotif && (
-                            <div ref={notifDropdownRef}>
-                                <NotificationsDropdown
-                                    notifications={[
-                                        "Order #1042 has been placed",
-                                        "Stock running low for Product A",
-                                        "Customer message received"
-                                    ]}
-                                />
-                            </div>
-                        )}
-                    </div>
-                    {/* <button className="about-btn">About</button> */}
-
-                    {/* Cart */}
-                    {mode === "buyer" && (
-                        <div className="cart-wrapper">
-                            <button
-                                className="cart-button"
-                                ref={cartRef}
+                        {/* Notifications */}
+                        <div className="notification-wrapper">
+                            <button className="bell-button"
+                                ref={bellRef}
                                 onClick={() => {
-                                    setOpenCart(!openCart)
-                                    setOpenNotif(false)
-                                }}
-                            >
-                                <ShoppingCart className="cart-icon" size={26} />
+                                    setOpenNotif(!openNotif)
+                                    setOpenCart(false)
+                                }}>
+
+                                <Bell className="bell-icon" size={24} />
+                                {notificationCount > 0 && <span className="notif-count"> {notificationCount} </span>}
                             </button>
 
-                            {openCart && (
-                                <div className="cart-dropdown" ref={cartDropdownRef}>
-                                    {cartItems.slice(0, 4).map(item => (
-                                        <div key={item.id} className="cart-item-card">
-
-                                            <img src={item.img} className="cart-thumb" alt="product" />
-
-                                            {/* Product Info */}
-                                            <div className="cart-item-info">
-                                                <p className="cart-item-name">{item.name}</p>
-                                            </div>
-
-                                            {/* Quantity Controls */}
-                                            <div className="qty-controls">
-                                                <button onClick={() => handleQtyChange(item.id, -1)}>
-                                                    <Minus size={14} />
-                                                </button>
-
-                                                <span className="qty-number">{item.qty}</span>
-
-                                                <button onClick={() => handleQtyChange(item.id, +1)}>
-                                                    <Plus size={14} />
-                                                </button>
-                                            </div>
-
-                                            {/* Remove Button */}
-                                            <button
-                                                className="remove-btn"
-                                                onClick={() => handleRemove(item.id)}
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ))}
-
-                                    <a href="/customer/cart" className="cart-more-link">View More →</a>
+                            {openNotif && (
+                                <div ref={notifDropdownRef}>
+                                    <NotificationsDropdown
+                                        notifications={[
+                                            "Order #1042 has been placed",
+                                            "Stock running low for Product A",
+                                            "Customer message received"
+                                        ]}
+                                    />
                                 </div>
                             )}
-                        </div>
-                    )}
 
-                </div>)}
+                        </div>
+
+                        {/* Cart */}
+                        {mode === "buyer" && (
+                            <div className="cart-wrapper">
+                                <button
+                                    className="cart-button"
+                                    ref={cartRef}
+                                    onClick={() => {
+                                        setOpenCart(!openCart)
+                                        setOpenNotif(false)
+                                    }}
+                                >
+                                    <ShoppingCart className="cart-icon" size={26} />
+                                </button>
+
+                                {openCart && (
+                                    <div className="cart-dropdown" ref={cartDropdownRef}>
+                                        {cartItems.slice(0, 4).map(item => (
+                                            <div key={item.id} className="cart-item-card">
+
+                                                <img src={item.img} className="cart-thumb" alt="product" />
+
+                                                {/* Product Info */}
+                                                <div className="cart-item-info">
+                                                    <p className="cart-item-name">{item.name}</p>
+                                                </div>
+
+                                                {/* Quantity Controls */}
+                                                <div className="qty-controls">
+                                                    <button onClick={() => handleQtyChange(item.id, -1)}>
+                                                        <Minus size={14} />
+                                                    </button>
+
+                                                    <span className="qty-number">{item.qty}</span>
+
+                                                    <button onClick={() => handleQtyChange(item.id, +1)}>
+                                                        <Plus size={14} />
+                                                    </button>
+                                                </div>
+
+                                                {/* Remove Button */}
+                                                <button
+                                                    className="remove-btn"
+                                                    onClick={() => handleRemove(item.id)}
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        <a href="/customer/cart" className="cart-more-link">View More →</a>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                    </div>
+                )}
 
 
 
             </div>
+            {/* TOP NAVIGATION BAR */}
+            {!isLandingPage && (
+                <nav className="top-nav">
+                    <ul>
+                        {navLinks.map(link => (
+                            <li key={link.name}>
+                                <a
+                                    href={link.path}
+                                    className={
+                                        location.pathname === link.path ? "active" : ""
+                                    }
+                                >
+                                    {link.name}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+            )}
         </header>
 
     );

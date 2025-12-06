@@ -213,6 +213,50 @@ body {
     margin: 0;
 }
 
+/* Full-width nav bar */
+.top-nav {
+    width: 100%;
+    background: #ffffff;
+    border-top: 1px solid #ddd;
+    /* border-bottom: 2px solid #ececec; */
+    padding: 0;
+    margin-top: 10px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Nav list */
+.top-nav ul {
+    display: flex;
+    gap: 35px;
+    padding: 12px 25px;
+    list-style: none;
+    margin: 0;
+}
+
+/* Nav links */
+.top-nav a {
+    text-decoration: none;
+    color: #222;
+    font-weight: 500;
+    padding-bottom: 5px;
+    transition: 0.2s ease;
+}
+
+/* Hover */
+.top-nav a:hover {
+    color: #7a2cff;
+}
+
+/* Active page highlight */
+.top-nav a.active {
+    color: #7a2cff;
+    border-bottom: 3px solid #7a2cff;
+}
+
+
 /* QTY CONTROLS */
 .qty-controls {
     display: flex;
