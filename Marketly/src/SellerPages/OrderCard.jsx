@@ -8,7 +8,7 @@ export default function OrderCard({ order, mode = "seller" }) {
 
     const detailLink =
         mode === "seller"
-            ? `/seller/orderd/${order.orderNumber}`
+            ? `/seller/orders/${order.orderNumber}`
             : `/customer/orders/${order.orderNumber}`;
 
     return (

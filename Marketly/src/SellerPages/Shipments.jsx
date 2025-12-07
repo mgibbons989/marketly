@@ -78,16 +78,17 @@ export default function Shipments({ mode = "seller" }) {
         setShowUnsavedWarning(false)
     };
 
-    // Handle backdrop click
-    // const handleBackdropClick = (e) => {
-    //     if (e.target.classList.contains("modal-overlay")) {
-    //         if (hasUnsavedChanges) {
-    //             setShowUnsavedWarning(true)
-    //         } else {
-    //             handleCancel()
-    //         }
-    //     }
-    // }
+    // Handle edit backdrop click with handle cancel
+    const handleBackdropClick = (e) => {
+        if (e.target.classList.contains("modal-overlay")) {
+            if (hasUnsavedChanges) {
+                setShowUnsavedWarning(true)
+            } else {
+                handleCancel()
+            }
+        }
+    }
+
     const handleAddShipment = () => {
         setShowAddModal(true);
         setNewShipment({
@@ -143,16 +144,16 @@ export default function Shipments({ mode = "seller" }) {
         setHasUnsavedChanges(false);
         setShowUnsavedWarning(false);
     };
-
-    // const handleAddModalBackdropClick = (e) => {
-    //     if (e.target.classList.contains("modal-overlay")) {
-    //         if (hasUnsavedChanges) {
-    //             setShowUnsavedWarning(true)
-    //         } else {
-    //             handleCancelAdd()
-    //         }
-    //     }
-    // }
+    // handle add modal click with handCancelAdd
+    const handleAddModalBackdropClick = (e) => {
+        if (e.target.classList.contains("modal-overlay")) {
+            if (hasUnsavedChanges) {
+                setShowUnsavedWarning(true)
+            } else {
+                handleCancelAdd()
+            }
+        }
+    }
 
     useEffect(() => {
         async function loadShipments() {
@@ -163,20 +164,29 @@ export default function Shipments({ mode = "seller" }) {
 
             // seller
             if (mode === "seller") {
-                const { data: subs } = await supabase
+                const { data: subs, error: subErr } = await supabase
                     .from("sub_order")
-                    .select("sub_id, order_id")
+                    .select("id, seller_id, order_id")
                     .eq("seller_id", user.id);
 
+                if (subErr) {
+                    console.error("err", subErr);
+                    return;
+                }
                 if (!subs) return;
 
                 // Load shipments for suborders
                 for (const sub of subs) {
-                    const { data: ship } = await supabase
+                    const { data: ship, error: shipErr } = await supabase
                         .from("Shipment")
-                        .select("shipment_id, carrier, tracking_num, status, created_on")
-                        .eq("sub_id", sub.sub_id)
+                        .select("sub_id, shipment_id, carrier, tracking_num, status, created_on")
+                        .eq("sub_id", sub.id)
                         .maybeSingle();
+
+                    if (shipErr) {
+                        console.error("err", shipErr);
+                        return;
+                    }
 
                     if (!ship) continue;
 
@@ -206,7 +216,7 @@ export default function Shipments({ mode = "seller" }) {
                         trackingNumber: ship.tracking_num,
                         status: ship.status,
                         address: custAddr?.address || "",
-                        sub_id: sub.sub_id,
+                        sub_id: sub.id,
                     });
                 }
 
@@ -216,8 +226,8 @@ export default function Shipments({ mode = "seller" }) {
                 for (const sub of subs) {
                     const { data: existing } = await supabase
                         .from("Shipment")
-                        .select("shipment_id")
-                        .eq("sub_id", sub.sub_id)
+                        .select("sub_id, shipment_id")
+                        .eq("sub_id", sub.id)
                         .maybeSingle();
 
                     if (existing) continue;
@@ -236,12 +246,12 @@ export default function Shipments({ mode = "seller" }) {
 
                     const { data: custAddr } = await supabase
                         .from("Customer")
-                        .select("address")
+                        .select("uid, address")
                         .eq("uid", ord.cust_id)
                         .single();
-
+                    console.log(custAddr.address)
                     openSubs.push({
-                        sub_id: sub.sub_id,
+                        sub_id: sub.id,
                         orderNumber: ord.order_num,
                         customerName: `${cust.Fname} ${cust.Lname}`,
                         address: custAddr?.address || "",
@@ -370,7 +380,7 @@ export default function Shipments({ mode = "seller" }) {
                                         <label>Select Order Number *</label>
                                         <select
                                             value={newShipment.orderNumber}
-                                            onChange={(e) => handleNewShipmentChange("orderNumber", e.target.value)}
+                                            onChange={(e) => handleNewShipmentChange("orderNumber", Number(e.target.value))}
                                             className="editable-input"
                                         >
                                             <option value="">-- Select an order --</option>

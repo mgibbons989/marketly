@@ -24,13 +24,22 @@ export default function CurrentShipments() {
 
             const { data: shipments } = await supabase
                 .from("Shipment")
-                .select("shipment_id, sub_id, carrier, tracking_num, status, created_on")
+                .select(`shipment_id, 
+                    sub_id, 
+                    carrier, 
+                    tracking_num, 
+                    status, 
+                    created_on,
+                    sub_order (
+                    order_id
+                )"`)
                 .in("sub_id", subIds);
 
             if (!shipments) {
                 setShipments([]);
                 return;
             }
+            // Shipment.sub_id -> sub_order.id identifies sub_order.order_id -> Drder.id(same as order_num)
 
             const formatted = shipments.map(sh => ({
                 shipmentId: sh.shipment_id,
@@ -39,6 +48,7 @@ export default function CurrentShipments() {
                 carrier: sh.carrier,
                 status: sh.status,
                 createdOn: sh.created_on,
+                orderNum: sh.sub_order?.order_id ?? null,
             }));
 
             setShipments(formatted);

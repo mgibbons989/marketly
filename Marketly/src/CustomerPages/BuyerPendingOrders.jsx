@@ -10,11 +10,17 @@ export default function PendingOrders() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
+
             // Get all orders for this customer
-            const { data: orderRows } = await supabase
+            const { data: orderRows, error: orderErr } = await supabase
                 .from("Order")
-                .select("order_num, createdOn")
+                .select("cust_id, order_num, createdOn")
                 .eq("cust_id", user.id);
+
+            if (orderErr) {
+                console.error("getting order error: ", orderErr)
+                return;
+            }
 
             let final = [];
 

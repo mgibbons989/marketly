@@ -25,7 +25,7 @@ export default function OrdersDetails({ mode = "seller" }) {
                 // Get this seller's suborder
                 const { data: sub } = await supabase
                     .from("sub_order")
-                    .select("order_id, status")
+                    .select("id, order_id, status")
                     .eq("seller_id", user.id)
                     .eq("order_id", orderId)
                     .single();
@@ -48,26 +48,34 @@ export default function OrdersDetails({ mode = "seller" }) {
                     .eq("uid", order.cust_id)
                     .single();
 
+                if (!sub?.id) {
+                    console.error("Missing suborder id", sub);
+                    navigate("/seller/orders");
+                    return;
+                }
                 // get items for THIS seller only
-                const { data: items } = await supabase
+                const { data: items, error: itemErr } = await supabase
                     .from("Order_item")
-                    .select("quantity, product_id")
+                    .select("sub_id, quantity, Products ( pname )")
                     .eq("sub_id", sub.id);
+                console.log(sub.id)
+                console.log(items)
+
+                if (itemErr) {
+                    console.error("suborder fetch error:", itemErr);
+                    return;
+                }
 
                 // get product names
                 const detailedItems = [];
                 for (const it of items) {
-                    const { data: p } = await supabase
-                        .from("Products")
-                        .select("pname")
-                        .eq("id", it.product_id)
-                        .single();
 
                     detailedItems.push({
-                        name: p.pname,
+                        name: it.Products?.pname ?? "Unknown Product",
                         qty: it.quantity
                     });
                 }
+
 
                 const payload = {
                     mode: "seller",
@@ -126,6 +134,8 @@ export default function OrdersDetails({ mode = "seller" }) {
                             qty: it.quantity
                         });
                     }
+
+
 
                     sellerBlocks.push({
                         subId: s.id,
@@ -218,12 +228,21 @@ export default function OrdersDetails({ mode = "seller" }) {
                                     </select>
                                 </div>
 
-                                <h2 className="section-title">Products (Your Portion)</h2>
+                                <h2 className="section-title">Products</h2>
                                 <div className="order-products-list">
                                     {data.products.map((p, idx) => (
-                                        <div key={idx} className="order-product-item">
-                                            <p className="order-product-name">{p.name}</p>
-                                            <p className="order-product-quantity">Qty: {p.qty}</p>
+                                        <div key={idx} className="product-item">
+                                            {/* <p className="order-product-name">{p.name}</p>
+                                            <p className="order-product-quantity">Qty: {p.qty}</p> */}
+                                            <div className="detail-row">
+                                                <span className="detail-label">Item: </span>
+                                                <span className="detail-value">{p.name}</span>
+                                            </div>
+
+                                            <div className="detail-row">
+                                                <span className="detail-label">Qty: </span>
+                                                <span className="detail-value">{p.qty}</span>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>

@@ -23,15 +23,19 @@ export default function CurrentShipments() {
                 // Get all seller suborders
                 const { data: subs } = await supabase
                     .from("sub_order")
-                    .select("order_id, seller_id")
+                    .select("id, order_id, seller_id")
                     .eq("order_id", ord.order_num);
 
                 for (const sub of subs) {
                     // Get shipment
                     const { data: ship } = await supabase
                         .from("Shipment")
-                        .select("sub_id, carrier, tracking_num, status, created_on")
-                        .eq("sub_id", sub.order_id)
+                        .select(`sub_id, 
+                            carrier, 
+                            tracking_num, 
+                            status, 
+                            created_on`)
+                        .eq("sub_id", sub.id)
                         .maybeSingle();
 
                     if (!ship) continue;
@@ -39,7 +43,7 @@ export default function CurrentShipments() {
                     final.push({
                         orderNum: ord.order_num,
                         trackingNum: ship.tracking_num,
-                        eta: ship.created_on, // Replace with real ETA if available
+                        eta: ship.created_on,
                     });
                 }
             }
