@@ -11,11 +11,44 @@ export default function LandingPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
+    const [errors, setErrors] = useState({});
     const navigate = useNavigate();
+
 
     async function handleLogin(e) {
         e.preventDefault();
         setErrorMsg("");
+        setErrors({});
+
+        function getLoginErrorMessage(error) {
+            const message = error.message.toLowerCase();
+
+            if (message.includes("invalid login credentials")) {
+                return "Email or password is incorrect.";
+            }
+
+            return "Unable to log in. Please try again.";
+        }
+
+        const validateEmail = (email) =>
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+        const newErrors = {};
+
+        if (!email.trim()) {
+            newErrors.email = "Email is required";
+        } else if (!validateEmail(email)) {
+            newErrors.email = "Invalid email format";
+        }
+
+        if (!password) {
+            newErrors.password = "Password is required";
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
 
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
             email,
@@ -23,11 +56,11 @@ export default function LandingPage() {
         });
 
         if (error) {
-            setErrorMsg(error.message);
+            setErrorMsg(getLoginErrorMessage(error));
             return;
         }
 
-        // --- CHECK IF CUSTOMER ---
+        // check if customer
         const { data: cust, error: custErr } = await supabase
             .from("Customer")
             .select("uid")
@@ -79,7 +112,11 @@ export default function LandingPage() {
                         {/* Tabs */}
                         <div className="tab-row">
                             <button
-                                onClick={() => setActiveTab("customer")}
+                                onClick={() => {
+                                    setActiveTab("customer");
+                                    setErrors({});
+                                    setErrorMsg("");
+                                }}
                                 className={
                                     `tab-btn ` +
                                     (activeTab === "customer" ? "tab-active-customer" : "tab-inactive")
@@ -89,7 +126,11 @@ export default function LandingPage() {
                             </button>
 
                             <button
-                                onClick={() => setActiveTab("seller")}
+                                onClick={() => {
+                                    setActiveTab("customer");
+                                    setErrors({});
+                                    setErrorMsg("");
+                                }}
                                 className={
                                     `tab-btn ` +
                                     (activeTab === "seller" ? "tab-active-seller" : "tab-inactive")
@@ -110,10 +151,14 @@ export default function LandingPage() {
                                     type="email"
                                     placeholder="Enter your email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className={`input ${activeTab === "customer" ? "focus-blue" : "focus-green"
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        if (errors.email) setErrors(prev => ({ ...prev, email: "" }));
+                                    }}
+                                    className={`input ${errors.email ? "error" : ""} ${activeTab === "customer" ? "focus-blue" : "focus-green"
                                         }`}
                                 />
+                                {errors.email && <span className="error-message">{errors.email}</span>}
                             </div>
 
                             <div className="form-group">
@@ -122,11 +167,23 @@ export default function LandingPage() {
                                     type="password"
                                     placeholder="Enter your password"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className={`input ${activeTab === "customer" ? "focus-blue" : "focus-green"
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        if (errors.password) setErrors(prev => ({ ...prev, password: "" }));
+                                    }}
+                                    className={`input ${errors.password ? "error" : ""} ${activeTab === "customer" ? "focus-blue" : "focus-green"
                                         }`}
                                 />
+                                {errors.password && (
+                                    <span className="error-message">{errors.password}</span>
+                                )}
                             </div>
+
+                            {errorMsg && (
+                                <div className="auth-error">
+                                    {errorMsg}
+                                </div>
+                            )}
 
                             <button
                                 type="submit"

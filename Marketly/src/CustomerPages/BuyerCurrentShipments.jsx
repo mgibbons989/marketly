@@ -36,6 +36,7 @@ export default function CurrentShipments() {
                             status, 
                             created_on`)
                         .eq("sub_id", sub.id)
+                        .neq("status", "Delivered")
                         .maybeSingle();
 
                     if (!ship) continue;

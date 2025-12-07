@@ -33,7 +33,8 @@ export default function CurrentShipments() {
                     sub_order (
                     order_id
                 )"`)
-                .in("sub_id", subIds);
+                .in("sub_id", subIds)
+                .neq("status", "Delivered");
 
             if (!shipments) {
                 setShipments([]);

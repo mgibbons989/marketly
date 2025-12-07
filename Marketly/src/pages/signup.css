@@ -1,8 +1,4 @@
 .signup-title {
-    /* font-size: 48px;
-    font-weight: 700;
-    margin: 0 0 20px 0;
-    line-height: 1.2; */
     font-size: 48px;
     font-weight: 600;
     color: #0f172a;
@@ -15,25 +11,9 @@
     max-width: 600px;
     line-height: 1.6;
     display: flex;
-    /* align-items: left; */
 }
 
-/* .signup-right {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-    background-color: #f9fafb;
-} */
-
 .signup-card {
-    /* background: white;
-    border-radius: 16px;
-    padding: 40px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 500px; */
     background: white;
     border-radius: 20px;
     padding: 32px;
@@ -41,54 +21,6 @@
     width: 100%;
 }
 
-/* .card-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0 0 30px 0;
-    text-align: center;
-    color: #1f2937;
-} */
-
-/* .tab-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 30px;
-} */
-
-/* .tab-btn {
-    flex: 1;
-    padding: 12px 24px;
-    border: 2px solid #e5e7eb;
-    background: white;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: #6b7280;
-} */
-
-/* .tab-btn:hover {
-    border-color: #d1d5db;
-} */
-
-/* .tab.active.customer {
-    background: #3b82f6;
-    border-color: #3b82f6;
-    color: white;
-}
-
-.tab.active.seller {
-    background: #10b981;
-    border-color: #10b981;
-    color: white;
-} */
-
-/* .signup-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-} */
 
 .form-row {
     display: flex;

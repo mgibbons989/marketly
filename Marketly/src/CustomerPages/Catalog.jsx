@@ -76,11 +76,11 @@ export default function Catalog() {
             .eq("cust_id", user.id)
             .single();
 
-        if (cartErr) {
-            console.error("Cart fetch error:", cartErr);
-            return;
-        }
-        console.log(cart)
+        // if (cartErr) {
+        //     console.error("Cart fetch error:", cartErr);
+        //     return;
+        // }
+        // console.log(cart)
 
         let cartId = cart?.id;
 
