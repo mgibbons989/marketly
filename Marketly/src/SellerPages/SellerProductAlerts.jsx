@@ -21,7 +21,7 @@ export default function ProductAlerts() {
                 return;
             }
 
-            const rows = data || [];
+            const rows = (data || []).filter(p => p.stock < 5);
             const formatted = rows.map(p => ({
                 name: p.pname,
                 qty: p.stock,

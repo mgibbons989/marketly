@@ -30,6 +30,7 @@ export default function PendingOrders() {
             let formatted = [];
 
             for (const sub of subs) {
+                if (sub.status.trim().toLowerCase() === "completed") continue;
                 const { data: order } = await supabase
                     .from("Order")
                     .select("order_num, cust_id, createdOn")

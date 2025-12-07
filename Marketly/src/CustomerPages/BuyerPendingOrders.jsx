@@ -32,6 +32,7 @@ export default function PendingOrders() {
                     .eq("order_id", ord.order_num);
 
                 for (const sub of subs) {
+                    if (sub.status.trim().toLowerCase() === "completed") continue;
                     //Get seller name
                     const { data: seller } = await supabase
                         .from("Seller")

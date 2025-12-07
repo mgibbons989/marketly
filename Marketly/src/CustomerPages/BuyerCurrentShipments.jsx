@@ -45,6 +45,7 @@ export default function CurrentShipments() {
                         trackingNum: ship.tracking_num,
                         eta: ship.created_on,
                     });
+
                 }
             }
 

@@ -47,7 +47,7 @@ export default function CurrentShipments() {
                 trackingNum: sh.tracking_num,
                 carrier: sh.carrier,
                 status: sh.status,
-                createdOn: sh.created_on,
+                eta: sh.created_on,
                 orderNum: sh.sub_order?.order_id ?? null,
             }));
 

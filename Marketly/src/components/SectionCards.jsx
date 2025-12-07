@@ -144,7 +144,11 @@ export default function SectionCards({ title, items, type, mode = "seller" }) {
                                         </div>
 
                                         <div className="card-value">
-                                            {item.eta}
+                                            {new Date(item.eta).toLocaleDateString("en-US", {
+                                                month: "long",
+                                                day: "numeric",
+                                                year: "numeric",
+                                            })}
                                         </div>
                                     </div>
 

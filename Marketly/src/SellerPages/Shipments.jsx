@@ -158,6 +158,7 @@ export default function Shipments({ mode = "seller" }) {
     useEffect(() => {
         async function loadShipments() {
             const { data: { user } } = await supabase.auth.getUser();
+            console.log(user)
             if (!user) return;
 
             let final = [];
@@ -215,7 +216,7 @@ export default function Shipments({ mode = "seller" }) {
                         carrier: ship.carrier,
                         trackingNumber: ship.tracking_num,
                         status: ship.status,
-                        address: custAddr?.address || "",
+                        address: custAddr?.address || "Address not Found",
                         sub_id: sub.id,
                     });
                 }
@@ -269,34 +270,51 @@ export default function Shipments({ mode = "seller" }) {
                     .eq("cust_id", user.id);
 
                 for (const ord of orders) {
-                    const { data: subs } = await supabase
+                    const { data: subs, error: subErr } = await supabase
                         .from("sub_order")
-                        .select("sub_id, seller_id")
+                        .select("id, order_id, seller_id")
                         .eq("order_id", ord.order_num);
 
+                    if (subErr) {
+                        console.error("err: ", subErr);
+                        return;
+                    }
+
+                    const { data: custAddr } = await supabase
+                        .from("Customer")
+                        .select("address")
+                        .eq("uid", user.id)
+                        .single()
+
                     for (const sub of subs) {
-                        const { data: ship } = await supabase
+                        const { data: ship, error: shipErr } = await supabase
                             .from("Shipment")
-                            .select("shipment_id, carrier, tracking_num, status")
-                            .eq("sub_id", sub.sub_id)
+                            .select("sub_id, shipment_id, carrier, tracking_num, status")
+                            .eq("sub_id", sub.id)
                             .maybeSingle();
+
+                        if (shipErr) {
+                            console.error("err: ", shipErr);
+                            return;
+                        }
 
                         if (!ship) continue;
 
                         const { data: seller } = await supabase
-                            .from("Users")
-                            .select("Fname, Lname")
+                            .from("Seller")
+                            .select("business_name, uid")
                             .eq("uid", sub.seller_id)
                             .single();
 
+
                         final.push({
                             id: ship.shipment_id,
-                            customerName: `${seller.Fname} ${seller.Lname}`,
+                            customerName: seller.business_name,
                             orderNumber: ord.order_num,
                             carrier: ship.carrier,
                             trackingNumber: ship.tracking_num,
                             status: ship.status,
-                            address: "See order details page",
+                            address: custAddr?.address || "Address not Found",
                             sub_id: sub.sub_id,
                         });
                     }
