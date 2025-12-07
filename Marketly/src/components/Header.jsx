@@ -41,13 +41,13 @@ function Header({ mode = "seller" }) {
 
         const newQty = Math.max(1, item.qty + delta);
 
-        // Update Supabase
+        // update Supabase
         await supabase
             .from("cart_item")
             .update({ quantity: newQty })
             .eq("id", id);
 
-        // Update local display instantly
+        // update local display instantly
         setCartItems(prev =>
             prev.map(i =>
                 i.id === id ? { ...i, qty: newQty } : i
@@ -180,6 +180,7 @@ function Header({ mode = "seller" }) {
 
         loadMiniCart();
     }, [openCart]);
+    console.log("NAV MODE:", mode);
 
     const navLinks = [
         {
@@ -202,6 +203,13 @@ function Header({ mode = "seller" }) {
             path: mode === "seller" ? "/seller/product-list" : "/customer/catalog",
             type: "link"
         },
+        ...(mode === "buyer"
+            ? [{
+                name: "Cart",
+                path: "/customer/cart",
+                type: "link"
+            }]
+            : []),
         {
             name: "Logout",
             type: "logout"  // special type
@@ -215,12 +223,12 @@ function Header({ mode = "seller" }) {
 
                 {!isLandingPage && !isSignupPage && (
                     <div className="header-right">
-                        {/* Profile */}
+                        {/* Profile name */}
                         <div className="profile">
                             <span className="profile-name">{userName || (mode === "seller" ? "Seller" : "Customer")}</span>
                         </div>
 
-                        {/* Notifications */}
+                        {/* Notification bell */}
                         <div className="notification-wrapper">
                             <button className="bell-button"
                                 ref={bellRef}
@@ -308,7 +316,7 @@ function Header({ mode = "seller" }) {
 
 
             </div>
-            {/* TOP NAVIGATION BAR */}
+            {/* nav bar */}
             {!isLandingPage && !isSignupPage && (
                 <nav className="top-nav">
                     <ul>

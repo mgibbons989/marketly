@@ -1,7 +1,7 @@
 import Header from "../components/Header";
 import React, { useState, useEffect } from "react";
 import { Search, Minus, Plus, X } from "lucide-react";
-import "./catalog.css";
+import "./css/catalog.css";
 import { supabase } from "../supabaseClient";
 
 
@@ -69,7 +69,7 @@ export default function Catalog() {
 
         // console.log(user);
 
-        // 1. Fetch the user's cart
+        // get the user's cart
         let { data: cart, error: cartErr } = await supabase
             .from("Cart")
             .select("id")
@@ -77,7 +77,7 @@ export default function Catalog() {
             .single();
 
         // if (cartErr) {
-        //     console.error("Cart fetch error:", cartErr);
+        //     console.error("Cart  error:", cartErr);
         //     return;
         // }
         // console.log(cart)
@@ -86,7 +86,7 @@ export default function Catalog() {
 
         console.log(cartId);
 
-        // 2. If no cart, create one
+        // create one if none
         if (!cartId) {
             const { data: newCart, error: newCartErr } = await supabase
                 .from("Cart")
@@ -102,7 +102,7 @@ export default function Catalog() {
             cartId = newCart.id;
         }
 
-        // 3. Check if the item already exists in cart
+        // if the item already exists in cart
         const { data: existingItem, error: existingErr } = await supabase
             .from("cart_item")
             .select("id, quantity")
@@ -115,7 +115,7 @@ export default function Catalog() {
             return;
         }
 
-        // 4. Update or insert item
+        // update or insert item
         if (existingItem) {
             await supabase
                 .from("cart_item")

@@ -8,12 +8,13 @@ import ProtectedRoute from "./components/protectedRoute.jsx"
 import Signup from "./pages/Signup.jsx"
 import LandingPage from "./pages/LandingPage.jsx"
 
+import Orders from "./pages/Orders.jsx"
+import OrderDetails from './pages/OrderDetails.jsx'
+import Shipments from './pages/Shipments.jsx'
+
 // seller pages
 import SellerDB from './SellerPages/SellerDB.jsx'
 import ProductList from './SellerPages/ProductList.jsx'
-import Orders from "./SellerPages/Orders.jsx"
-import OrderDetails from './SellerPages/OrderDetails.jsx'
-import Shipments from './SellerPages/Shipments.jsx'
 
 // customer pages
 import CustomerDB from './CustomerPages/CustomerDB.jsx'
@@ -24,11 +25,10 @@ import Catalog from './CustomerPages/Catalog.jsx'
 export default function App() {
   return (
     <Routes>
-      {/* Public routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/signup" element={<Signup />} />
 
-      {/* Seller protected routes */}
+      {/* Seller routes */}
       <Route
         path="/seller/product-list"
         element={
@@ -74,7 +74,7 @@ export default function App() {
         }
       />
 
-      {/* Customer protected routes */}
+      {/* Customer routes */}
       <Route
         path="/customer/cart"
         element={

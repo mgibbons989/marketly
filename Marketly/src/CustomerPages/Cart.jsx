@@ -1,6 +1,6 @@
 import Header from "../components/Header";
 import { useState, useEffect } from "react"
-import "./cart.css"
+import "./css/cart.css"
 import { useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
@@ -71,7 +71,7 @@ export default function Cart() {
                 quantity: item.quantity,
                 seller_id: item.Products.seller_id,
                 seller: `${item.Products.Seller.business_name}`,
-                checked: false,  // UI only
+                checked: false,
             }));
 
             setCartItems(formatted);
@@ -145,7 +145,7 @@ export default function Cart() {
             <Header mode="buyer" />
             <div className="page">
                 <div className="page-inner">
-                    <button className="back-button" onClick={handleBack}>
+                    <button className="cart-back-button" onClick={handleBack}>
                         ← Back
                     </button>
 

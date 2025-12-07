@@ -2,6 +2,7 @@ import Header from "../components/Header";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import "./css/checkout.css"
 
 export default function Checkout() {
     const navigate = useNavigate();
@@ -39,7 +40,7 @@ export default function Checkout() {
             newErrors.cardNumber = "Card number must be 16 digits"
         }
 
-        // Expiration Date validation (MMYYYY, 6 digits, future date)
+        // Expiration Date validation
         if (!/^\d{6}$/.test(paymentInfo.expDate)) {
             newErrors.expDate = "Expiration date must be 6 digits (MMYYYY)"
         } else {
@@ -197,28 +198,27 @@ export default function Checkout() {
 
                 <div className="page-inner">
 
-                    <button className="back-to-cart-button" onClick={handleBackToCart}>
+                    <button className="check-back-to-cart-button" onClick={handleBackToCart}>
                         ← Back to Cart
                     </button>
 
                     <h1 className="page-title">Checkout</h1>
 
                     <h2 className="section-title">Product List</h2>
-                    <div className="products-container">
+                    <div className="check-products-container">
                         {products.map((product) => (
-                            <div key={product.id} className="product-card">
-                                {/* <input type="checkbox" className="checkout-product-checkbox" checked={true} disabled /> */}
+                            <div key={product.id} className="check-product-card">
 
-                                <img src={product.image || "/placeholder.svg"} alt={product.name} className="product-image" />
+                                <img src={product.image || "/placeholder.svg"} alt={product.name} className="check-product-image" />
 
-                                <div className="product-info">
-                                    <h3 className="product-name">{product.name}</h3>
-                                    <p className="product-seller">{product.seller}</p>
+                                <div className="check-product-info">
+                                    <h3 className="check-product-name">{product.name}</h3>
+                                    <p className="check-product-seller">{product.seller}</p>
                                 </div>
 
                                 <div className="quantity-display-static">Qty: {product.quantity}</div>
 
-                                <div className="product-price">${(product.price * product.quantity).toFixed(2)}</div>
+                                <div className="check-product-price">${(product.price * product.quantity).toFixed(2)}</div>
                             </div>
                         ))}
                     </div>
@@ -231,8 +231,9 @@ export default function Checkout() {
                         {paymentOpen && (
                             <div className="dropdown-content">
                                 <div className="form-group">
-                                    <label>Card Number</label>
+                                    <label className="check-label">Card Number</label>
                                     <input
+                                        className="check-input"
                                         type="text"
                                         value={paymentInfo.cardNumber}
                                         onChange={(e) => setPaymentInfo({ ...paymentInfo, cardNumber: e.target.value })}
@@ -243,8 +244,9 @@ export default function Checkout() {
                                 </div>
 
                                 <div className="form-group">
-                                    <label>Exp Date (MMYYYY)</label>
+                                    <label className="check-label">Exp Date (MMYYYY)</label>
                                     <input
+                                        className="check-input"
                                         type="text"
                                         value={paymentInfo.expDate}
                                         onChange={(e) => setPaymentInfo({ ...paymentInfo, expDate: e.target.value })}
@@ -255,8 +257,9 @@ export default function Checkout() {
                                 </div>
 
                                 <div className="form-group">
-                                    <label>CV (3 digits on the back of card)</label>
+                                    <label className="check-label">CV (3 digits on the back of card)</label>
                                     <input
+                                        className="check-input"
                                         type="text"
                                         value={paymentInfo.cv}
                                         onChange={(e) => setPaymentInfo({ ...paymentInfo, cv: e.target.value })}
@@ -267,8 +270,9 @@ export default function Checkout() {
                                 </div>
 
                                 <div className="form-group">
-                                    <label>Billing Zip Code</label>
+                                    <label className="check-label">Billing Zip Code</label>
                                     <input
+                                        className="check-input"
                                         type="text"
                                         value={paymentInfo.zipCode}
                                         onChange={(e) => setPaymentInfo({ ...paymentInfo, zipCode: e.target.value })}
@@ -289,8 +293,9 @@ export default function Checkout() {
                         {addressOpen && (
                             <div className="dropdown-content">
                                 <div className="form-group">
-                                    <label>Full Address</label>
+                                    <label className="check-label">Full Address</label>
                                     <input
+                                        className="check-input"
                                         type="text"
                                         value={address}
                                         onChange={(e) => setAddress(e.target.value)}
@@ -302,18 +307,18 @@ export default function Checkout() {
                         )}
                     </div>
 
-                    <div className="order-summary">
-                        <div className="summary-row">
-                            <span className="summary-label">Subtotal:</span>
-                            <span className="summary-value">${subtotal.toFixed(2)}</span>
+                    <div className="check-order-summary">
+                        <div className="check-summary-row">
+                            <span className="check-summary-label">Subtotal:</span>
+                            <span className="check-summary-value">${subtotal.toFixed(2)}</span>
                         </div>
-                        <div className="summary-row">
-                            <span className="summary-label">Tax (8%):</span>
-                            <span className="summary-value">${tax.toFixed(2)}</span>
+                        <div className="check-summary-row">
+                            <span className="check-summary-label">Tax (8%):</span>
+                            <span className="check-summary-value">${tax.toFixed(2)}</span>
                         </div>
-                        <div className="summary-row total">
-                            <span className="summary-label">Total:</span>
-                            <span className="summary-value">${total.toFixed(2)}</span>
+                        <div className="check-summary-row total">
+                            <span className="check-summary-label">Total:</span>
+                            <span className="check-summary-value">${total.toFixed(2)}</span>
                         </div>
                         <button className="place-order-button" onClick={handlePlaceOrder}>
                             Place Order

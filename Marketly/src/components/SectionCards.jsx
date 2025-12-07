@@ -94,7 +94,7 @@ export default function SectionCards({ title, items, type, mode = "seller" }) {
                                         </div>
 
                                         <div className="card-value">
-                                            <span className={`status-badge status-${item.status.toLowerCase().replace(" ", "-")}`}>
+                                            <span className={`dash-status-badge status-${item.status.toLowerCase().replace(" ", "-")}`}>
                                                 {item.status}
                                             </span>
                                         </div>
@@ -107,7 +107,11 @@ export default function SectionCards({ title, items, type, mode = "seller" }) {
                                         </div>
 
                                         <div className="card-value">
-                                            {item.datePlaced}
+                                            {new Date(item.datePlaced).toLocaleDateString("en-US", {
+                                                month: "long",
+                                                day: "numeric",
+                                                year: "numeric",
+                                            })}
                                         </div>
 
                                     </div>

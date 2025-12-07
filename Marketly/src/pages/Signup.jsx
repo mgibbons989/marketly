@@ -74,7 +74,7 @@ export default function Signup() {
             return;
         }
 
-        // Create user in Supabase Auth
+        // Create user in Supabase 
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: formData.email.trim(),
             password: formData.password,

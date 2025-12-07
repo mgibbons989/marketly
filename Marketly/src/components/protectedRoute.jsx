@@ -15,7 +15,7 @@ export default function ProtectedRoute({ children }) {
         checkUser();
     }, []);
 
-    if (loading) return null; // or a spinner
+    if (loading) return null;
 
     return authenticated ? children : <Navigate to="/" />;
 }

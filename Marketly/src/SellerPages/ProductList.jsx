@@ -28,7 +28,7 @@ export default function ProductList() {
         price: ''
     })
 
-    // Filter products by partial name (case-insensitive)
+    // Filter products 
     const filteredProducts = useMemo(() => {
         const term = searchTerm.trim().toLowerCase()
         if (!term) return products
@@ -37,7 +37,7 @@ export default function ProductList() {
         )
     }, [products, searchTerm])
 
-    // ---------- Add Product Modal ----------
+    // add product pop up
     const openAddModal = () => {
         setAddForm({ name: '', quantity: '', image: '', price: '' })
         setIsAddModalOpen(true)
@@ -202,7 +202,7 @@ export default function ProductList() {
             return;
         }
 
-        // Update UI
+        // Update
         setProducts(prev => prev.filter(p => p.id !== editForm.id));
         setIsEditModalOpen(false);
     };
@@ -243,7 +243,6 @@ export default function ProductList() {
             <Header />
             <div className="page">
                 <div className="page-inner">
-                    {/* Search Bar */}
 
                     <div className="search-container">
                         <div className="search-wrapper">
@@ -258,7 +257,6 @@ export default function ProductList() {
                         </div>
                     </div>
 
-                    {/* Header */}
                     <div className="header-section">
                         <h1 className="page-title">Product List</h1>
                         <button
@@ -270,7 +268,6 @@ export default function ProductList() {
                         </button>
                     </div>
 
-                    {/* Product Cards */}
                     {products.length === 0 ? (
                         <div className="emptymessage">No Products Found</div>
                     ) : (
@@ -292,7 +289,7 @@ export default function ProductList() {
                                         <div className="product-name">
                                             {product.name}
                                         </div>
-                                        {/* come back to this !!!!!!!!!!!! */}
+
                                         <div className="product-image-wrap">
                                             <img
                                                 src={product.image}
@@ -316,7 +313,6 @@ export default function ProductList() {
                     )}
 
 
-                    {/* Add Product Modal */}
                     {isAddModalOpen && (
                         <div
                             className="modal-overlay"
@@ -418,7 +414,6 @@ export default function ProductList() {
                         </div>
                     )}
 
-                    {/* Edit Product Modal */}
                     {isEditModalOpen && (
                         <div
                             className="modal-overlay"

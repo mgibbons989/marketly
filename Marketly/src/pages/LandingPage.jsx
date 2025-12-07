@@ -14,12 +14,13 @@ export default function LandingPage() {
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
 
-
+    // login function
     async function handleLogin(e) {
         e.preventDefault();
         setErrorMsg("");
         setErrors({});
 
+        // for errors signing in
         function getLoginErrorMessage(error) {
             const message = error.message.toLowerCase();
 
@@ -30,6 +31,7 @@ export default function LandingPage() {
             return "Unable to log in. Please try again.";
         }
 
+        // valiate email and password before trying to sign in
         const validateEmail = (email) =>
             /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -50,6 +52,7 @@ export default function LandingPage() {
             return;
         }
 
+        // try to sign in
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
             email,
             password
@@ -60,7 +63,7 @@ export default function LandingPage() {
             return;
         }
 
-        // check if customer
+        // check if user is customer
         const { data: cust, error: custErr } = await supabase
             .from("Customer")
             .select("uid")
@@ -72,7 +75,7 @@ export default function LandingPage() {
             return;
         }
 
-        // CHECK SELLER
+        // check if user is a seller
         const { data: seller } = await supabase
             .from("Seller")
             .select("uid, business_name")
@@ -83,20 +86,18 @@ export default function LandingPage() {
             navigate("/dashboard/seller");
             return;
         }
-
+        // fall back
         setErrorMsg("User has no assigned role.");
     }
 
     return (
         <div className="Landingpage">
-            {/* Header */}
             <Header />
 
-            {/* Main Content */}
             <main className="main">
                 <div className="grid-layout">
 
-                    {/* Welcome Section */}
+                    {/* Welcome  */}
                     <div className="welcome">
                         <h2 className="welcome-title">Welcome to Marketly.</h2>
                         <p className="welcome-text">
@@ -105,11 +106,11 @@ export default function LandingPage() {
                         </p>
                     </div>
 
-                    {/* Login Card */}
+                    {/* Login  */}
                     <div className="landing-card">
                         <h3 className="card-title">Log In Here!</h3>
 
-                        {/* Tabs */}
+                        {/* seller vs customer tabs */}
                         <div className="tab-row">
                             <button
                                 onClick={() => {
@@ -127,7 +128,7 @@ export default function LandingPage() {
 
                             <button
                                 onClick={() => {
-                                    setActiveTab("customer");
+                                    setActiveTab("seller");
                                     setErrors({});
                                     setErrorMsg("");
                                 }}
@@ -155,14 +156,14 @@ export default function LandingPage() {
                                         setEmail(e.target.value);
                                         if (errors.email) setErrors(prev => ({ ...prev, email: "" }));
                                     }}
-                                    className={`input ${errors.email ? "error" : ""} ${activeTab === "customer" ? "focus-blue" : "focus-green"
+                                    className={`home-input ${errors.email ? "error" : ""} ${activeTab === "customer" ? "focus-blue" : "focus-green"
                                         }`}
                                 />
                                 {errors.email && <span className="error-message">{errors.email}</span>}
                             </div>
 
                             <div className="form-group">
-                                <label>Password</label>
+                                <label className="land">Password</label>
                                 <input
                                     type="password"
                                     placeholder="Enter your password"
@@ -171,7 +172,7 @@ export default function LandingPage() {
                                         setPassword(e.target.value);
                                         if (errors.password) setErrors(prev => ({ ...prev, password: "" }));
                                     }}
-                                    className={`input ${errors.password ? "error" : ""} ${activeTab === "customer" ? "focus-blue" : "focus-green"
+                                    className={`home-input ${errors.password ? "error" : ""} ${activeTab === "customer" ? "focus-blue" : "focus-green"
                                         }`}
                                 />
                                 {errors.password && (
