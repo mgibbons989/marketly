@@ -305,7 +305,7 @@ function Header({ mode = "seller" }) {
                                             </div>
                                         ))}
 
-                                        <Link to={/customer/cart} className="cart-more-link">View More →</Link>
+                                        <Link to="/customer/cart" className="cart-more-link">View More →</Link>
                                     </div>
                                 )}
                             </div>
