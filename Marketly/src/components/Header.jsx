@@ -5,6 +5,7 @@ import "../styles.css"
 import { useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 
 function Header({ mode = "seller" }) {
@@ -304,7 +305,7 @@ function Header({ mode = "seller" }) {
                                             </div>
                                         ))}
 
-                                        <a href="/customer/cart" className="cart-more-link">View More →</a>
+                                        <Link to={/customer/cart} className="cart-more-link">View More →</Link>
                                     </div>
                                 )}
                             </div>
@@ -326,14 +327,14 @@ function Header({ mode = "seller" }) {
                                     <button className="logout-link" onClick={handleLogout}>{link.name}</button>
                                 ) :
                                     (
-                                        <a
-                                            href={link.path}
+                                        <Link
+                                            to={link.path}
                                             className={
                                                 location.pathname === link.path ? "active" : ""
                                             }
                                         >
                                             {link.name}
-                                        </a>
+                                        </Link>
                                     )}
 
                             </li>
