@@ -420,3 +420,9 @@
 .btn-stay:hover {
     background-color: #e5e7eb;
 }
+
+.seller-name {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgb(0, 0, 0);
+}

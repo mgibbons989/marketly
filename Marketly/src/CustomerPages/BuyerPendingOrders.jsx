@@ -21,21 +21,21 @@ export default function PendingOrders() {
             for (const ord of orderRows) {
                 // Get all suborders (each seller)
                 const { data: subs } = await supabase
-                    .from("Sub_order")
-                    .select("sub_id, seller_id, status")
+                    .from("sub_order")
+                    .select("id, seller_id, status, order_id")
                     .eq("order_id", ord.order_num);
 
                 for (const sub of subs) {
                     //Get seller name
                     const { data: seller } = await supabase
-                        .from("Users")
-                        .select("Fname, Lname")
+                        .from("Seller")
+                        .select("business_name")
                         .eq("uid", sub.seller_id)
                         .single();
 
                     // Build card
                     final.push({
-                        sellerName: `${seller.Fname} ${seller.Lname}`,
+                        sellerName: seller.business_name,
                         orderNum: ord.order_num,
                         status: sub.status,
                         datePlaced: ord.createdOn

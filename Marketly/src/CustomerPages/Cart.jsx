@@ -22,46 +22,55 @@ export default function Cart() {
             // find the cart row
             let { data: cart } = await supabase
                 .from("Cart")
-                .select("cart_id")
-                .eq("customer_id", user.id)
+                .select("id")
+                .eq("cust_id", user.id)
                 .maybeSingle();
 
             // if no cart exists, create one
             if (!cart) {
                 const { data: newCart } = await supabase
                     .from("Cart")
-                    .insert([{ customer_id: user.id }])
+                    .insert([{ cust_id: user.id }])
                     .select()
                     .single();
                 cart = newCart;
             }
 
-            const cartId = cart.cart_id;
+            const cartId = cart.id;
 
             // load all items in the cart
             const { data: items } = await supabase
-                .from("Cart_item")
-                .select("c_itemid, product_id, quantity, Products (pname, price, image, seller_id)")
+                .from("cart_item")
+                .select(`id, 
+                    product_id,
+                     quantity, 
+                     Products (
+                     pname, 
+                     price, 
+                     image, 
+                     seller_id,
+                     Seller ( business_name))`)
                 .eq("cart_id", cartId);
 
             // load seller names
-            const { data: sellers } = await supabase
-                .from("Users")
-                .select("uid, Fname, Lname");
+            // const { data: sellers } = await supabase
+            //     .from("Users")
+            //     .select("uid, Fname, Lname");
 
-            const sellerMap = {};
-            sellers.forEach(s => {
-                sellerMap[s.uid] = `${s.Fname} ${s.Lname}`;
-            });
+            // const sellerMap = {};
+            // sellers.forEach(s => {
+            //     sellerMap[s.uid] = `${s.Fname} ${s.Lname}`;
+            // });
 
             const formatted = items.map((item) => ({
-                id: item.c_itemid,
+                id: item.id,
                 product_id: item.product_id,
                 name: item.Products.pname,
                 price: item.Products.price,
                 image: item.Products.image,
                 quantity: item.quantity,
-                seller: sellerMap[item.Products.seller_id],
+                seller_id: item.Products.seller_id,
+                seller: `${item.Products.Seller.business_name}`,
                 checked: false,  // UI only
             }));
 
@@ -75,9 +84,9 @@ export default function Cart() {
     const handleBack = () => navigate(-1)
 
     const handleCheckbox = (id) => {
-        setProducts((prev) =>
-            prev.map((p) =>
-                p.id === id ? { ...p, checked: !p.checked } : p
+        setCartItems(prev =>
+            prev.map(item =>
+                item.id === id ? { ...item, checked: !item.checked } : item
             )
         );
     };
@@ -87,9 +96,9 @@ export default function Cart() {
         const newQty = Math.max(1, item.quantity + delta);
 
         await supabase
-            .from("Cart_item")
+            .from("cart_item")
             .update({ quantity: newQty })
-            .eq("c_itemid", id);
+            .eq("id", id);
 
         setCartItems(prev =>
             prev.map(p =>
@@ -100,9 +109,9 @@ export default function Cart() {
 
     const handleRemove = async (id) => {
         await supabase
-            .from("Cart_item")
+            .from("cart_item")
             .delete()
-            .eq("c_itemid", id);
+            .eq("id", id);
 
         setCartItems(prev => prev.filter(p => p.id !== id));
     };
@@ -143,7 +152,7 @@ export default function Cart() {
                     <h1 className="page-title">Cart</h1>
 
                     <div className="cart-products-container">
-                        {products.map((product) => (
+                        {cartItems.map((product) => (
                             <div key={product.id} className="cart-product-card">
                                 <input
                                     type="checkbox"
@@ -152,7 +161,7 @@ export default function Cart() {
                                     onChange={() => handleCheckbox(product.id)}
                                 />
 
-                                <img src={product.image || "/placeholder.svg"} alt={product.name} className="cart-product-image" />
+                                <img src={product.image || "/placeholder.svg"} className="cart-product-image" />
 
                                 <div className="cart-product-info">
                                     <h3 className="cart-product-name">{product.name}</h3>
@@ -160,20 +169,16 @@ export default function Cart() {
                                 </div>
 
                                 <div className="quantity-controls">
-                                    <button className="quantity-btn" onClick={() => handleQuantityChange(product.id, -1)}>
-                                        -
-                                    </button>
+                                    <button className="quantity-btn" onClick={() => handleQuantityChange(product.id, -1)}>-</button>
                                     <span className="quantity-display">{product.quantity}</span>
-                                    <button className="quantity-btn" onClick={() => handleQuantityChange(product.id, 1)}>
-                                        +
-                                    </button>
+                                    <button className="quantity-btn" onClick={() => handleQuantityChange(product.id, 1)}>+</button>
                                 </div>
 
-                                <div className="cart-product-price">${(product.price * product.quantity).toFixed(2)}</div>
+                                <div className="cart-product-price">
+                                    ${(product.price * product.quantity).toFixed(2)}
+                                </div>
 
-                                <button className="remove-button" onClick={() => handleRemove(product.id)}>
-                                    Remove
-                                </button>
+                                <button className="remove-button" onClick={() => handleRemove(product.id)}>Remove</button>
                             </div>
                         ))}
                         <div className="cart-summary">

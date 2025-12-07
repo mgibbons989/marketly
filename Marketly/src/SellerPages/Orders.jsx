@@ -16,11 +16,12 @@ export default function Orders({ mode = "seller" }) {
 
     useEffect(() => {
         async function fetchOrders() {
+
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
             // ------------ CUSTOMER MODE ------------
-            if (mode === "customer") {
+            if (mode === "buyer") {
                 // Get all orders for this customer
                 const { data: orderRows } = await supabase
                     .from("Order")
@@ -32,22 +33,26 @@ export default function Orders({ mode = "seller" }) {
                 for (const ord of orderRows) {
                     // Get ALL sellers for this order
                     const { data: subs } = await supabase
-                        .from("Sub_order")
+                        .from("sub_order")
                         .select("seller_id, status")
                         .eq("order_id", ord.order_num);
 
                     // For each seller, create an order entry
                     for (const sub of subs) {
                         const { data: seller } = await supabase
-                            .from("Users")
-                            .select("Fname, Lname")
+                            // .from("Users")
+                            // .select("Fname, Lname")
+                            // .eq("uid", sub.seller_id)
+                            // .single();
+                            .from("Seller")
+                            .select("business_name")
                             .eq("uid", sub.seller_id)
-                            .single();
+                            .single()
 
                         formatted.push({
-                            id: ord.order_num,
+                            id: ord.id,
                             sellerId: sub.seller_id,
-                            sellerName: `${seller.Fname} ${seller.Lname}`,
+                            sellerName: seller.business_name,
                             orderNumber: ord.order_num,
                             status: sub.status,
                             datePlaced: ord.createdOn
@@ -62,8 +67,8 @@ export default function Orders({ mode = "seller" }) {
             else {
                 // Find all suborders belonging to seller
                 const { data: subs } = await supabase
-                    .from("Sub_order")
-                    .select("sub_id, order_id, status")
+                    .from("sub_order")
+                    .select("order_id, status")
                     .eq("seller_id", user.id);
 
                 let formatted = [];
@@ -73,7 +78,7 @@ export default function Orders({ mode = "seller" }) {
                     const { data: ord } = await supabase
                         .from("Order")
                         .select("order_num, cust_id, status, createdOn")
-                        .eq("order_num", sub.order_id)
+                        .eq("id", sub.order_id)
                         .single();
 
                     if (!ord) continue;
@@ -86,7 +91,7 @@ export default function Orders({ mode = "seller" }) {
                         .single();
 
                     formatted.push({
-                        id: sub.sub_id,
+                        id: sub.id,
                         customerName: `${customer.Fname} ${customer.Lname}`,
                         orderNumber: ord.order_num,
                         status: sub.status,

@@ -35,7 +35,7 @@ export default function LandingPage() {
             .single();
 
         if (cust) {
-            navigate("customer/dashboard/");
+            navigate("dashboard/customer");
             return;
         }
 

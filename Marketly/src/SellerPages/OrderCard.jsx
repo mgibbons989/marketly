@@ -2,13 +2,14 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 export default function OrderCard({ order, mode = "seller" }) {
+    console.log(order.orderNumber)
     const nameLabel = mode === "seller" ? "Customer Name" : "Seller Name";
     const nameValue = mode === "seller" ? order.customerName : order.sellerName;
 
     const detailLink =
         mode === "seller"
-            ? `/seller/order/${order.orderNumber}`
-            : `/customer/order/${order.orderNumber}`;
+            ? `/seller/orderd/${order.orderNumber}`
+            : `/customer/orders/${order.orderNumber}`;
 
     return (
         <div key={order.id} className="order-card">

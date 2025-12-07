@@ -24,8 +24,8 @@ export default function OrdersDetails({ mode = "seller" }) {
             if (mode === "seller") {
                 // Get this seller's suborder
                 const { data: sub } = await supabase
-                    .from("Sub_order")
-                    .select("sub_id, order_id, status")
+                    .from("sub_order")
+                    .select("order_id, status")
                     .eq("seller_id", user.id)
                     .eq("order_id", orderId)
                     .single();
@@ -52,7 +52,7 @@ export default function OrdersDetails({ mode = "seller" }) {
                 const { data: items } = await supabase
                     .from("Order_item")
                     .select("quantity, product_id")
-                    .eq("sub_id", sub.sub_id);
+                    .eq("sub_id", sub.id);
 
                 // get product names
                 const detailedItems = [];
@@ -76,7 +76,7 @@ export default function OrdersDetails({ mode = "seller" }) {
                     datePlaced: order.createdOn,
                     products: detailedItems,
                     status: sub.status,
-                    subId: sub.sub_id
+                    subId: sub.id
                 };
 
                 setData(payload);
@@ -92,8 +92,8 @@ export default function OrdersDetails({ mode = "seller" }) {
                     .single();
 
                 const { data: subs } = await supabase
-                    .from("Sub_order")
-                    .select("sub_id, seller_id, status")
+                    .from("sub_order")
+                    .select("id, seller_id, status")
                     .eq("order_id", orderId);
 
                 const sellerBlocks = [];
@@ -101,16 +101,16 @@ export default function OrdersDetails({ mode = "seller" }) {
                 for (const s of subs) {
                     // Get seller name
                     const { data: seller } = await supabase
-                        .from("Users")
-                        .select("Fname, Lname")
+                        .from("Seller")
+                        .select("business_name")
                         .eq("uid", s.seller_id)
                         .single();
 
                     // Get items for this seller
                     const { data: items } = await supabase
                         .from("Order_item")
-                        .select("product_id, quantity")
-                        .eq("sub_id", s.sub_id);
+                        .select("id, product_id, quantity")
+                        .eq("sub_id", s.id);
 
                     const detailedItems = [];
 
@@ -128,8 +128,8 @@ export default function OrdersDetails({ mode = "seller" }) {
                     }
 
                     sellerBlocks.push({
-                        subId: s.sub_id,
-                        sellerName: `${seller.Fname} ${seller.Lname}`,
+                        subId: s.id,
+                        sellerName: seller.business_name,
                         status: s.status,
                         products: detailedItems
                     });
@@ -161,9 +161,9 @@ export default function OrdersDetails({ mode = "seller" }) {
     // save status
     async function handleSaveChanges() {
         await supabase
-            .from("Sub_order")
+            .from("sub_order")
             .update({ status: currentStatus })
-            .eq("sub_id", data.subId);
+            .eq("id", data.subId);
 
         alert("Status updated!");
         setHasChanges(false);
@@ -242,18 +242,29 @@ export default function OrdersDetails({ mode = "seller" }) {
                         )}
 
                         {/* CUSTOMER MODE */}
-                        {mode === "customer" && (
+                        {mode === "buyer" && (
                             <>
-                                <h2 className="section-title">Seller Breakdown</h2>
                                 {data.sellers.map((s, idx) => (
                                     <div key={idx} className="seller-block">
-                                        <h3 className="seller-name">{s.sellerName}</h3>
-                                        <p className="seller-status">Status: {s.status}</p>
+                                        <h2 className="seller-name">{s.sellerName}</h2>
+
+                                        <div className="detail-row">
+                                            <span className="detail-label">Status: </span>
+                                            <span className="detail-value">{s.status}</span>
+                                        </div>
 
                                         {s.products.map((p, j) => (
                                             <div key={j} className="product-item">
-                                                <p className="product-name">{p.name}</p>
-                                                <p className="product-quantity">Qty: {p.qty}</p>
+
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Item: </span>
+                                                    <span className="detail-value">{p.name}</span>
+                                                </div>
+
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Qty: </span>
+                                                    <span className="detail-value">{p.qty}</span>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

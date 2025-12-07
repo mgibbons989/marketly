@@ -33,26 +33,36 @@ function Header({ mode = "seller" }) {
 
     const [userName, setUserName] = useState("");
 
-    const [cartItems, setCartItems] = useState([
-        { id: 1, name: "Red Sneakers", qty: 1, img: "https://via.placeholder.com/50" },
-        { id: 2, name: "Bluetooth Headphones", qty: 2, img: "https://via.placeholder.com/50" },
-        { id: 3, name: "LED Desk Lamp", qty: 1, img: "https://via.placeholder.com/50" },
-        { id: 4, name: "Water Bottle", qty: 1, img: "https://via.placeholder.com/50" }
-    ])
+    const [cartItems, setCartItems] = useState([])
 
-    const handleQtyChange = (id, delta) => {
+    const handleQtyChange = async (id, delta) => {
+        const item = cartItems.find(i => i.id === id);
+        if (!item) return;
+
+        const newQty = Math.max(1, item.qty + delta);
+
+        // Update Supabase
+        await supabase
+            .from("cart_item")
+            .update({ quantity: newQty })
+            .eq("id", id);
+
+        // Update local display instantly
         setCartItems(prev =>
-            prev.map(item =>
-                item.id === id
-                    ? { ...item, qty: Math.max(1, item.qty + delta) }
-                    : item
+            prev.map(i =>
+                i.id === id ? { ...i, qty: newQty } : i
             )
-        )
-    }
+        );
+    };
 
-    const handleRemove = (id) => {
-        setCartItems(prev => prev.filter(item => item.id !== id))
-    }
+    const handleRemove = async (id) => {
+        await supabase
+            .from("cart_item")
+            .delete()
+            .eq("id", id);
+
+        setCartItems(prev => prev.filter(i => i.id !== id));
+    };
 
     useEffect(() => {
         function handleClick(e) {
@@ -81,6 +91,7 @@ function Header({ mode = "seller" }) {
         async function fetchUserName() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
+            // console.log(user)
 
             let profileName = "";
 
@@ -116,6 +127,59 @@ function Header({ mode = "seller" }) {
 
         fetchUserName();
     }, []);
+
+    useEffect(() => {
+        async function loadMiniCart() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            // Get user's cart using correct columns
+            const { data: cart } = await supabase
+                .from("Cart")
+                .select("id")
+                .eq("cust_id", user.id)
+                .maybeSingle();
+
+            if (!cart) {
+                setCartItems([]);
+                return;
+            }
+
+            const cartId = cart.id;
+
+            // Load cart items + product join
+            const { data: items } = await supabase
+                .from("cart_item")
+                .select(`
+                id,
+                quantity,
+                product_id,
+                Products (
+                    pname,
+                    price,
+                    image,
+                    seller_id
+                )
+            `)
+                .eq("cart_id", cartId);
+
+            if (!items) {
+                setCartItems([]);
+                return;
+            }
+
+            const formatted = items.map(item => ({
+                id: item.id,
+                name: item.Products?.pname,
+                qty: item.quantity,
+                img: item.Products?.image || "/placeholder.svg",
+            }));
+
+            setCartItems(formatted.slice(0, 4));
+        }
+
+        loadMiniCart();
+    }, [openCart]);
 
     const navLinks = [
         {

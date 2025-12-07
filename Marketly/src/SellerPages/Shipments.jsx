@@ -164,7 +164,7 @@ export default function Shipments({ mode = "seller" }) {
             // seller
             if (mode === "seller") {
                 const { data: subs } = await supabase
-                    .from("Sub_order")
+                    .from("sub_order")
                     .select("sub_id, order_id")
                     .eq("seller_id", user.id);
 
@@ -260,7 +260,7 @@ export default function Shipments({ mode = "seller" }) {
 
                 for (const ord of orders) {
                     const { data: subs } = await supabase
-                        .from("Sub_order")
+                        .from("sub_order")
                         .select("sub_id, seller_id")
                         .eq("order_id", ord.order_num);
 

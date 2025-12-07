@@ -16,22 +16,22 @@ export default function CurrentShipments() {
             // Get all customer orders
             const { data: orders } = await supabase
                 .from("Order")
-                .select("order_num")
+                .select("order_num, cust_id")
                 .eq("cust_id", user.id);
 
             for (const ord of orders) {
                 // Get all seller suborders
                 const { data: subs } = await supabase
-                    .from("Sub_order")
-                    .select("sub_id, seller_id")
+                    .from("sub_order")
+                    .select("order_id, seller_id")
                     .eq("order_id", ord.order_num);
 
                 for (const sub of subs) {
                     // Get shipment
                     const { data: ship } = await supabase
                         .from("Shipment")
-                        .select("carrier, tracking_num, status, created_on")
-                        .eq("sub_id", sub.sub_id)
+                        .select("sub_id, carrier, tracking_num, status, created_on")
+                        .eq("sub_id", sub.order_id)
                         .maybeSingle();
 
                     if (!ship) continue;

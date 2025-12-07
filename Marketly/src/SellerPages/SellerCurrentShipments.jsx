@@ -10,22 +10,35 @@ export default function CurrentShipments() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { data } = await supabase
+            const { data: subs } = await supabase
+                .from("sub_order")
+                .select("id")
+                .eq("seller_id", user.id);
+
+            if (!subs || subs.length === 0) {
+                setShipments([]);
+                return;
+            }
+
+            const subIds = subs.map(s => s.id);
+
+            const { data: shipments } = await supabase
                 .from("Shipment")
                 .select("shipment_id, sub_id, carrier, tracking_num, status, created_on")
-                .in(
-                    "sub_id",
-                    (await supabase
-                        .from("Sub_order")
-                        .select("sub_id")
-                        .eq("seller_id", user.id)
-                    ).data.map(s => s.sub_id)
-                );
+                .in("sub_id", subIds);
 
-            const formatted = data.map(sh => ({
-                orderNum: sh.sub_id,
+            if (!shipments) {
+                setShipments([]);
+                return;
+            }
+
+            const formatted = shipments.map(sh => ({
+                shipmentId: sh.shipment_id,
+                subId: sh.sub_id,
                 trackingNum: sh.tracking_num,
-                eta: sh.created_on,
+                carrier: sh.carrier,
+                status: sh.status,
+                createdOn: sh.created_on,
             }));
 
             setShipments(formatted);

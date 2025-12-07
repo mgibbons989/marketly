@@ -20,16 +20,6 @@ export default function Catalog() {
                 .select(`id, pname, price, stock, image, seller_id, 
                     Seller: seller_id ( business_name )`);
 
-            // get all sellers 
-            // let { data: sellersData } = await supabase
-            //     .from("Seller")
-            //     .select("uid, business_name");
-
-            // const sellerMap = {};
-            // sellersData.forEach((s) => {
-            //     sellerMap[s.uid] = `${s.business_name}`;
-            // });
-
             const formatted = productsData.map((p) => ({
                 id: p.id,
                 name: p.pname,
@@ -55,6 +45,7 @@ export default function Catalog() {
     });
 
     const handleCardClick = (product) => {
+        console.log(product)
         setSelectedProduct(product)
         setQuantity(1)
     }
@@ -73,67 +64,88 @@ export default function Catalog() {
     }
 
     const handleAddToCart = async () => {
-        const productId = selectedProduct.id;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return alert("Not logged in!");
 
-        // get current user
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return alert("You must be logged in!");
+        // console.log(user);
 
-        // find or create a cart for the user
-        const { data: cart } = await supabase
+        // 1. Fetch the user's cart
+        let { data: cart, error: cartErr } = await supabase
             .from("Cart")
-            .select("cart_id")
-            .eq("customer_id", user.id)
+            .select("id")
+            .eq("cust_id", user.id)
             .single();
 
-        let cartId = cart?.cart_id;
+        if (cartErr) {
+            console.error("Cart fetch error:", cartErr);
+            return;
+        }
+        console.log(cart)
 
+        let cartId = cart?.id;
+
+        console.log(cartId);
+
+        // 2. If no cart, create one
         if (!cartId) {
-            // create new cart
-            const { data: newCart } = await supabase
+            const { data: newCart, error: newCartErr } = await supabase
                 .from("Cart")
-                .insert([{ customer_id: user.id }])
-                .select()
+                .insert([{ cust_id: user.id }])
+                .select("id")
                 .single();
 
-            cartId = newCart.cart_id;
+            if (newCartErr) {
+                console.error("Cart creation failed:", newCartErr);
+                return;
+            }
+
+            cartId = newCart.id;
         }
 
-        // does this product already exist in cart?
-        const { data: existingItem } = await supabase
-            .from("Cart_item")
-            .select("quantity")
+        // 3. Check if the item already exists in cart
+        const { data: existingItem, error: existingErr } = await supabase
+            .from("cart_item")
+            .select("id, quantity")
             .eq("cart_id", cartId)
-            .eq("product_id", productId)
+            .eq("product_id", selectedProduct.id)
             .maybeSingle();
 
-        if (existingItem) {
-            // update quantity
-            await supabase
-                .from("Cart_item")
-                .update({
-                    quantity: existingItem.quantity + quantity,
-                })
-                .eq("cart_id", cartId)
-                .eq("product_id", productId);
-        } else {
-            // insert new item
-            await supabase.from("Cart_item").insert([
-                {
-                    cart_id: cartId,
-                    product_id: productId,
-                    quantity: quantity,
-                },
-            ]);
+        if (existingErr) {
+            console.error("Find item error:", existingErr);
+            return;
         }
 
-        handleCloseModal();
-        setShowSuccess(true);
+        // 4. Update or insert item
+        if (existingItem) {
+            await supabase
+                .from("cart_item")
+                .update({
+                    quantity: existingItem.quantity + quantity
+                })
+                .eq("id", existingItem.id);
+        } else {
+            console.log(cartId, selectedProduct.id, quantity)
 
-        setTimeout(() => setShowSuccess(false), 2500);
+            const { error: insertErr } = await supabase
+                .from("cart_item")
+                .insert([
+                    {
+                        cart_id: cartId,
+                        product_id: selectedProduct.id,
+                        quantity: quantity
+                    }
+                ]);
+
+            if (insertErr) {
+                console.error("Insert item error:", insertErr);
+                return;
+            }
+        }
+
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 2000);
     };
+
     return (
         <>
             <Header mode="buyer" />
@@ -186,7 +198,7 @@ export default function Catalog() {
 
                             <div className="modal-info">
                                 <h2 className="modal-product-name">{selectedProduct.name}</h2>
-                                <p className="modal-seller">{selectedProduct.sellerName}</p>
+                                <p className="modal-seller">Sold by: {selectedProduct.sellerName}</p>
                                 <p className="modal-price">${selectedProduct.price.toFixed(2)}</p>
 
                                 <div className="quantity-section">

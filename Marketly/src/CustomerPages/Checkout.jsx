@@ -24,6 +24,8 @@ export default function Checkout() {
         const saved = sessionStorage.getItem("checkoutItems");
         if (saved) {
             setProducts(JSON.parse(saved));
+            // console.log(products)
+            // console.log(saved)
         }
     }, [])
 
@@ -119,10 +121,21 @@ export default function Checkout() {
             bySeller[p.seller_id].push(p);
         });
 
-        // create Sub_orders and Order_items
+        const { error: addressErr } = await supabase
+            .from("Customer")
+            .update({ address })
+            .eq("uid", user.id);
+
+        if (addressErr) {
+            console.error(addressErr);
+            alert("Failed to save your address.");
+            setProcessing(false);
+            return;
+        }
+        // create sub_orders and Order_items
         for (const sellerId of Object.keys(bySeller)) {
             const { data: subOrder, error: subErr } = await supabase
-                .from("Sub_order")
+                .from("sub_order")
                 .insert([
                     {
                         seller_id: sellerId,
@@ -140,7 +153,7 @@ export default function Checkout() {
                 return;
             }
 
-            const subId = subOrder.sub_id;
+            const subId = subOrder.id;
 
             // insert items for this seller
             const itemsToInsert = bySeller[sellerId].map((p) => ({
@@ -161,26 +174,8 @@ export default function Checkout() {
             }
         }
 
-        // insert payment
-        const { error: payErr } = await supabase
-            .from("Payment")
-            .insert([
-                {
-                    order_id: orderId,
-                    amt: total,
-                    method: "card",
-                    paid_at: new Date().toISOString(),
-                },
-            ]);
-
-        if (payErr) {
-            console.error(payErr);
-            alert("Payment insert failed (but order was created).");
-        }
-
-        // remove purchased items from Cart_item
         for (const p of products) {
-            await supabase.from("Cart_item").delete().eq("c_itemid", p.id);
+            await supabase.from("cart_item").delete().eq("id", p.id);
         }
 
         // clear session storage

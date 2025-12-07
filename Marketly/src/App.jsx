@@ -48,7 +48,7 @@ export default function App() {
       />
 
       <Route
-        path="/seller/order/:orderId"
+        path="/seller/orders/:orderId"
         element={
           <ProtectedRoute>
             <OrderDetails mode='seller' />
@@ -112,7 +112,7 @@ export default function App() {
       />
 
       <Route
-        path="/customer/order/:orderId"
+        path="/customer/orders/:orderId"
         element={
           <ProtectedRoute>
             <OrderDetails mode='buyer' />

@@ -14,8 +14,8 @@ export default function ProductAlerts() {
             // Get cart id for user
             const { data: cart } = await supabase
                 .from("Cart")
-                .select("cart_id")
-                .eq("customer_id", user.id)
+                .select("id", "cust_id")
+                .eq("cust_id", user.id)
                 .single();
 
             if (!cart) {
@@ -25,9 +25,9 @@ export default function ProductAlerts() {
 
             // Get items in the cart
             const { data: items } = await supabase
-                .from("Cart_item")
+                .from("cart_item")
                 .select("product_id, quantity")
-                .eq("cart_id", cart.cart_id);
+                .eq("cart_id", cart.id);
 
             let final = [];
 
@@ -41,7 +41,7 @@ export default function ProductAlerts() {
 
                 if (!product) continue;
 
-                if (product.stock < item.quantity) {
+                if (product.stock < item.quantity && product.stock < 5) {
                     final.push({
                         id: item.product_id,
                         name: product.pname,

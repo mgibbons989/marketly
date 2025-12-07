@@ -10,10 +10,19 @@ export default function PendingOrders() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { data: subs } = await supabase
-                .from("Sub_order")
-                .select("sub_id, order_id, status")
+            // console.log("get orders");
+
+            const { data: subs, error: subErr } = await supabase
+                .from("sub_order")
+                .select("order_id, status, seller_id")
                 .eq("seller_id", user.id);
+            // console.log("got orders")
+
+            if (subErr) {
+                console.error("suborder fetch error:", subErr);
+                return;
+            }
+
 
             if (!subs) return;
 
@@ -33,6 +42,8 @@ export default function PendingOrders() {
                     .select("Fname, Lname")
                     .eq("uid", order.cust_id)
                     .single();
+
+                if (!customer) continue;
 
                 formatted.push({
                     customerName: `${customer.Fname} ${customer.Lname}`,
